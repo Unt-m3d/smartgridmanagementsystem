@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Grid Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<h2> Smart Grid Dashboard</h2>
+
+<!-- DEVICE CONTROL -->
+<h3>Device Control</h3>
+<button onclick="turnOn()">ON</button>
+<button onclick="turnOff()">OFF</button>
+<p>Status: <span id="status">Loading...</span></p>
+
+<!-- ENERGY INFO -->
+<h3>Energy Info</h3>
+<p>Energy Used: <span id="energy">0</span> kWh</p>
+<p>Estimated Cost: KES <span id="cost">0</span></p>
+
+<!-- GRAPH -->
+<h3>Live Data</h3>
+<canvas id="chart"></canvas>
+
+<script>
+let labels = [];
+let powerData = [];
+let voltageData = [];
+let currentData = [];
+
+let totalEnergy = 0; // kWh
+const costPerKwh = 25; // adjust to KPLC rate if needed
+
+const ctx = document.getElementById('chart').getContext('2d');
+
+const chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [
+            { label: 'Power (W)', data: powerData, borderWidth: 2 },
+            { label: 'Voltage (V)', data: voltageData, borderWidth: 2 },
+            { label: 'Current (A)', data: currentData, borderWidth: 2 }
+        ]
+    }
+});
+
+// FETCH DATA
+async function fetchData() {
+    const res = await fetch('/api/data/');
+    const data = await res.json();
+
+    if (data.length > 0) {
+        const latest = data[data.length - 1];
+
+        const time = new Date().toLocaleTimeString();
+
+        labels.push(time);
+        powerData.push(latest.power);
+        voltageData.push(latest.voltage);
+        currentData.push(latest.current);
+
+        // ENERGY CALCULATION (kWh)
+        totalEnergy += (latest.power / 1000) * (5 / 3600); // 5 sec interval
+        document.getElementById('energy').innerText = totalEnergy.toFixed(4);
+
+        // COST
+        let cost = totalEnergy * costPerKwh;
+        document.getElementById('cost').innerText = cost.toFixed(2);
+
+        if (labels.length > 10) {
+            labels.shift();
+            powerData.shift();
+            voltageData.shift();
+            currentData.shift();
+        }
+
+        chart.update();
+    }
+}
+
+// DEVICE CONTROL
+async function turnOn() {
+    await fetch('/api/device/on/', { method: 'POST' });
+    updateStatus();
+}
+
+async function turnOff() {
+    await fetch('/api/device/off/', { method: 'POST' });
+    updateStatus();
+}
+
+// STATUS
+async function updateStatus() {
+    const res = await fetch('/api/device/status/');
+    const data = await res.json();
+    document.getElementById('status').innerText = data.on ? "ON" : "OFF";
+}
+
+// RUN EVERY 5 SECONDS
+setInterval(fetchData, 5000);
+setInterval(updateStatus, 3000);
+
+// INITIAL LOAD
+updateStatus();
+</script>
+
+</body>
+</html>
