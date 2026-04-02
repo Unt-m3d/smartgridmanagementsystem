@@ -20,6 +20,6 @@ from django.shortcuts import redirect
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('energy.urls')),
-    path('', lambda request: redirect('api/')),
+    path('', include('energy.urls')),
+    path('adfpi/', lambda request: redirect('api/')),
 ]
