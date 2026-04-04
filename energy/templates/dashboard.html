@@ -1,27 +1,161 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Smart Grid Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Grid Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #0a0f1c;
+    color: white;
+}
+
+h2 {
+    text-align: center;
+    margin: 20px;
+}
+
+/* GRID */
+.container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+/* CARDS */
+.card {
+    background: rgba(255,255,255,0.05);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
+}
+
+/* BUTTONS */
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    margin: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.on {
+    background: #00e676;
+    box-shadow: 0 0 10px #00e676;
+}
+
+.off {
+    background: #ff1744;
+    box-shadow: 0 0 10px #ff1744;
+}
+
+button:hover {
+    transform: scale(1.1);
+}
+
+/* VALUES */
+.value {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+/* LIVE COLORS */
+.power { color: #2196f3; }
+.voltage { color: #f44336; }
+.current { color: #ff9800; }
+
+/* STATUS BADGE */
+.status-badge {
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+.on-status {
+    background: #00e676;
+    color: black;
+}
+
+.off-status {
+    background: #ff1744;
+}
+
+/* ALERT BOX */
+#alertBox {
+    display: none;
+    background: rgba(255,0,0,0.1);
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 0 0 15px red;
+}
+
+.alert-safe {
+    border: 2px solid #00e676 !important;
+    box-shadow: 0 0 10px #00e676 !important;
+}
+
+/* CHART */
+canvas {
+    background: #111827;
+    border-radius: 10px;
+    padding: 10px;
+}
+</style>
 </head>
+
 <body>
 
-<h2> Smart Grid Dashboard</h2>
+<h2>⚡ Smart Grid Energy Control System</h2>
 
-<!-- DEVICE CONTROL -->
-<h3>Device Control</h3>
-<button onclick="turnOn()">ON</button>
-<button onclick="turnOff()">OFF</button>
-<p>Status: <span id="status">Loading...</span></p>
+<div class="container">
 
-<!-- ENERGY INFO -->
-<h3>Energy Info</h3>
-<p>Energy Used: <span id="energy">0</span> kWh</p>
-<p>Estimated Cost: KES <span id="cost">0</span></p>
+    <!-- DEVICE CONTROL -->
+    <div class="card">
+        <h3>🔌 Device Control</h3>
+        <button class="on" onclick="turnOn()">ON</button>
+        <button class="off" onclick="turnOff()">OFF</button>
+        <p>Status: <span id="status" class="status-badge">Loading...</span></p>
+    </div>
 
-<!-- GRAPH -->
-<h3>Live Data</h3>
-<canvas id="chart"></canvas>
+    <!-- ENERGY -->
+    <div class="card">
+        <h3>⚡ Energy</h3>
+        <p>Energy Used</p>
+        <div class="value"><span id="energy">0</span> kWh</div>
+
+        <p>Cost</p>
+        <div class="value">KES <span id="cost">0</span></div>
+    </div>
+
+    <!-- LIVE DATA -->
+    <div class="card">
+        <h3>📊 Live Data</h3>
+        <p class="power">Power: <span id="power">0</span> W</p>
+        <p class="voltage">Voltage: <span id="voltage">0</span> V</p>
+        <p class="current">Current: <span id="current">0</span> A</p>
+    </div>
+
+    <!-- ALERTS -->
+    <div class="card" id="alertBox">
+        <h3>🚨 System Alerts</h3>
+        <p id="alertMessage">No alerts</p>
+    </div>
+
+    <!-- GRAPH -->
+    <div class="card" style="grid-column: span 2;">
+        <h3>📈 Real-Time Monitoring</h3>
+        <canvas id="chart"></canvas>
+    </div>
+
+</div>
 
 <script>
 let labels = [];
@@ -29,8 +163,8 @@ let powerData = [];
 let voltageData = [];
 let currentData = [];
 
-let totalEnergy = 0; // kWh
-const costPerKwh = 25; // adjust to KPLC rate if needed
+let totalEnergy = 0;
+const costPerKwh = 25;
 
 const ctx = document.getElementById('chart').getContext('2d');
 
@@ -39,70 +173,116 @@ const chart = new Chart(ctx, {
     data: {
         labels: labels,
         datasets: [
-            { label: 'Power (W)', data: powerData, borderWidth: 2 },
-            { label: 'Voltage (V)', data: voltageData, borderWidth: 2 },
-            { label: 'Current (A)', data: currentData, borderWidth: 2 }
+            { label: 'Power (W)', data: powerData, borderColor: '#2196f3', backgroundColor: '#2196f3', tension:0.4, borderWidth:3 },
+            { label: 'Voltage (V)', data: voltageData, borderColor: '#f44336', backgroundColor: '#f44336', tension:0.4, borderWidth:3 },
+            { label: 'Current (A)', data: currentData, borderColor: '#ff9800', backgroundColor: '#ff9800', tension:0.4, borderWidth:3 }
         ]
+    },
+    options: {
+        responsive: true,
+        animation: false,
+        plugins: {
+            legend: { labels: { color: "white" } }
+        },
+        scales: {
+            x: { ticks: { color: "white" } },
+            y: { ticks: { color: "white" } }
+        }
     }
 });
 
+// SOUND ALERT
+function playBeep() {
+    const audio = new Audio("https://www.soundjay.com/button/beep-3.mp3");
+    audio.play();
+}
+
+// ALERT LOGIC
+function checkAlerts(power, voltage, current, deviceOn) {
+    let alerts = [];
+
+    if (voltage > 240) alerts.push("⚠️ High Voltage!");
+    if (current > 2) alerts.push("⚠️ High Current!");
+    if (power > 400) alerts.push("⚠️ High Power Consumption!");
+    if (!deviceOn && power > 0) alerts.push("⚠️ Power flowing while device OFF!");
+
+    const alertBox = document.getElementById("alertBox");
+    const alertMsg = document.getElementById("alertMessage");
+
+    if (alerts.length > 0) {
+        alertBox.style.display = "block";
+        alertBox.classList.remove("alert-safe");
+        alertMsg.innerHTML = alerts.join("<br>");
+        playBeep();
+    } else {
+        alertBox.style.display = "block";
+        alertBox.classList.add("alert-safe");
+        alertMsg.innerHTML = "✅ System Normal";
+    }
+}
+
 // FETCH DATA
 async function fetchData() {
-    const res = await fetch('/api/data/all/');
-    const data = await res.json();
+    try {
+        const res = await fetch('/api/data/all/');
+        const data = await res.json();
 
-    if (data.length > 0) {
-        const latest = data[data.length - 1];
+        if (data.length > 0) {
+            const latest = data[data.length - 1];
+            const time = new Date().toLocaleTimeString();
 
-        const time = new Date().toLocaleTimeString();
+            labels.push(time);
+            powerData.push(latest.power);
+            voltageData.push(latest.voltage);
+            currentData.push(latest.current);
 
-        labels.push(time);
-        powerData.push(latest.power);
-        voltageData.push(latest.voltage);
-        currentData.push(latest.current);
+            document.getElementById('power').innerText = latest.power;
+            document.getElementById('voltage').innerText = latest.voltage;
+            document.getElementById('current').innerText = latest.current;
 
-        // ENERGY CALCULATION (kWh)
-        totalEnergy += (latest.power / 1000) * (5 / 3600); // 5 sec interval
-        document.getElementById('energy').innerText = totalEnergy.toFixed(4);
+            totalEnergy += (latest.power / 1000) * (5 / 3600);
+            document.getElementById('energy').innerText = totalEnergy.toFixed(4);
 
-        // COST
-        let cost = totalEnergy * costPerKwh;
-        document.getElementById('cost').innerText = cost.toFixed(2);
+            let cost = totalEnergy * costPerKwh;
+            document.getElementById('cost').innerText = cost.toFixed(2);
 
-        if (labels.length > 10) {
-            labels.shift();
-            powerData.shift();
-            voltageData.shift();
-            currentData.shift();
+            if (labels.length > 15) {
+                labels.shift();
+                powerData.shift();
+                voltageData.shift();
+                currentData.shift();
+            }
+
+            chart.update();
+
+            // Get device status for alerts
+            const statusRes = await fetch('/api/device/status/');
+            const statusData = await statusRes.json();
+
+            // Run alerts
+            checkAlerts(latest.power, latest.voltage, latest.current, statusData.on);
         }
-
-        chart.update();
+    } catch (err) {
+        console.error(err);
     }
 }
 
 // DEVICE CONTROL
-async function turnOn() {
-    await fetch('/api/device/on/', { method: 'POST' });
-    updateStatus();
-}
-
-async function turnOff() {
-    await fetch('/api/device/off/', { method: 'POST' });
-    updateStatus();
-}
+async function turnOn() { await fetch('/api/device/on/', { method: 'POST' }); updateStatus(); }
+async function turnOff() { await fetch('/api/device/off/', { method: 'POST' }); updateStatus(); }
 
 // STATUS
 async function updateStatus() {
     const res = await fetch('/api/device/status/');
     const data = await res.json();
-    document.getElementById('status').innerText = data.on ? "ON" : "OFF";
+    const statusEl = document.getElementById('status');
+    if (data.on) { statusEl.innerText="ON"; statusEl.className="status-badge on-status"; }
+    else { statusEl.innerText="OFF"; statusEl.className="status-badge off-status"; }
 }
 
-// RUN EVERY 5 SECONDS
-setInterval(fetchData, 5000);
-setInterval(updateStatus, 3000);
-
-// INITIAL LOAD
+// RUN
+setInterval(fetchData, 3000);
+setInterval(updateStatus, 2000);
 updateStatus();
 </script>
 
