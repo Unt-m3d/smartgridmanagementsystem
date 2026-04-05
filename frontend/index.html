@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Grid Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Smart Grid Dashboard</h1>
+    </header>
+    <main>
+        <section id="charts">
+            <!-- Dashboard charts will be rendered here -->
+            <div id="lineChart"></div>
+            <div id="barChart"></div>
+            <div id="pieChart"></div>
+        </section>
+        <section id="controls">
+            <h2>Controls</h2>
+            <button id="refresh">Refresh Data</button>
+        </section>
+        <section id="alerts">
+            <h2>Alerts</h2>
+            <div id="alertContainer">
+                <!-- Alerts will be displayed here -->
+            </div>
+        </section>
+        <section id="realtime-monitoring">
+            <h2>Real-Time Monitoring</h2>
+            <div id="monitoringData">
+                <!-- Real-time data will be displayed here -->
+            </div>
+        </section>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
