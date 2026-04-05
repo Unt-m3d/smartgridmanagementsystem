@@ -1,39 +1,146 @@
 from django.shortcuts import render
-
-# Create your views here.
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .models import EnergyData
+from .models import EnergyData, DeviceStatus
 from .serializers import EnergyDataSerializer
-device_status = {"on": True}
+import logging
+
+logger = logging.getLogger(__name__)
+
+def get_device_status():
+    """Get current device status from database"""
+    try:
+        status = DeviceStatus.objects.get(device_id='main_device')
+        return status.status == 'on'
+    except DeviceStatus.DoesNotExist:
+        DeviceStatus.objects.create(device_id='main_device', status='on')
+        return True
+    except Exception as e:
+        logger.error(f"Error getting device status: {str(e)}")
+        return True
+
+def set_device_status(is_on):
+    """Set device status in database"""
+    try:
+        device, created = DeviceStatus.objects.get_or_create(device_id='main_device')
+        device.status = 'on' if is_on else 'off'
+        device.save()
+        logger.info(f"Device status set to: {device.status}")
+    except Exception as e:
+        logger.error(f"Error setting device status: {str(e)}")
 
 @api_view(['POST'])
 def receive_data(request):
-    serializer = EnergyDataSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response({"message": "Data saved"})
-    return Response(serializer.errors)
+    """Save energy data with validation"""
+    try:
+        serializer = EnergyDataSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            logger.info("Energy data saved successfully")
+            return Response({"message": "Data saved successfully"}, status=201)
+        
+        logger.warning(f"Validation error: {serializer.errors}")
+        return Response({
+            "error": "Invalid data",
+            "details": serializer.errors
+        }, status=400)
+    except Exception as e:
+        logger.error(f"Error saving data: {str(e)}")
+        return Response({
+            "error": "Failed to save data",
+            "details": str(e)
+        }, status=500)
 
 @api_view(['GET'])
 def get_data(request):
-    data = EnergyData.objects.all()
-    serializer = EnergyDataSerializer(data, many=True)
-    return Response(serializer.data)
+    """Fetch energy data with pagination"""
+    try:
+        limit = request.query_params.get('limit', 100)
+        
+        try:
+            limit = int(limit)
+            if limit <= 0:
+                limit = 100
+            if limit > 1000:
+                limit = 1000
+        except ValueError:
+            logger.warning(f"Invalid limit parameter: {limit}")
+            limit = 100
+        
+        data = EnergyData.objects.all().order_by('-timestamp')[:limit]
+        
+        if not data.exists():
+            logger.info("No energy data found")
+            return Response([], status=200)
+        
+        serializer = EnergyDataSerializer(data, many=True)
+        logger.info(f"Retrieved {len(serializer.data)} energy records")
+        return Response(serializer.data, status=200)
+    
+    except Exception as e:
+        logger.error(f"Error fetching data: {str(e)}")
+        return Response({
+            "error": "Failed to fetch data",
+            "details": str(e)
+        }, status=500)
+
 @api_view(['POST'])
 def turn_on(request):
-    device_status["on"] = True
-    return Response({"status": "Device ON"})
+    """Turn device ON and save to database"""
+    try:
+        set_device_status(True)
+        logger.info("Device turned ON")
+        return Response({
+            "status": "Device turned ON",
+            "on": True,
+            "message": "Device is now ON"
+        }, status=200)
+    except Exception as e:
+        logger.error(f"Error turning on device: {str(e)}")
+        return Response({
+            "error": "Failed to turn on device",
+            "details": str(e)
+        }, status=500)
 
 @api_view(['POST'])
 def turn_off(request):
-    device_status["on"] = False
-    return Response({"status": "Device OFF"})
+    """Turn device OFF and save to database"""
+    try:
+        set_device_status(False)
+        logger.info("Device turned OFF")
+        return Response({
+            "status": "Device turned OFF",
+            "on": False,
+            "message": "Device is now OFF"
+        }, status=200)
+    except Exception as e:
+        logger.error(f"Error turning off device: {str(e)}")
+        return Response({
+            "error": "Failed to turn off device",
+            "details": str(e)
+        }, status=500)
 
 @api_view(['GET'])
 def get_status(request):
-    return Response(device_status)
-from django.shortcuts import render
+    """Get current device status from database"""
+    try:
+        is_on = get_device_status()
+        logger.debug(f"Device status retrieved: {is_on}")
+        return Response({
+            "on": is_on,
+            "status": "ON" if is_on else "OFF"
+        }, status=200)
+    except Exception as e:
+        logger.error(f"Error getting status: {str(e)}")
+        return Response({
+            "error": "Failed to get status",
+            "details": str(e)
+        }, status=500)
 
 def dashboard(request):
-    return render(request, 'dashboard.html')    
+    """Render dashboard template"""
+    try:
+        return render(request, 'dashboard.html')
+    except Exception as e:
+        logger.error(f"Error rendering dashboard: {str(e)}")
+        return render(request, 'error.html', {'error': str(e)}, status=500)
