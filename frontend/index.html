@@ -3,19 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMART GRID MANAGEMENT SYSTEM</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>⚡ Smart Grid Energy Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #0a0f1c;
+    color: white;
+}
+
+h2 {
+    text-align: center;
+    margin: 20px;
+    font-size: 2.2em;
+    color: #00e676;
+    text-shadow: 0 0 20px rgba(0, 230, 118, 0.5);
+}
+
+/* GRID */
+.container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* CARDS */
+.card {
+    background: rgba(255,255,255,0.05);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    background: rgba(255,255,255,0.08);
+    transform: translateY(-5px);
+    box-shadow: 0 0 30px rgba(0, 230, 118, 0.2);
+}
+
+/* BUTTONS */
+button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    margin: 5px 5px 5px 0;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.on {
+    background: linear-gradient(135deg, #00e676 0%, #1de9b6 100%);
+    color: black;
+    box-shadow: 0 0 15px #00e676;
+}
+
+.on:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 25px #00e676;
+}
+
+.on:active {
+    transform: scale(0.98);
+}
+
+.off {
+    background: linear-gradient(135deg, #ff1744 0%, #ff6e40 100%);
+    color: white;
+    box-shadow: 0 0 15px #ff1744;
+}
+
+.off:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 25px #ff1744;
+}
+
+.off:active {
+    transform: scale(0.98);
+}
+
+/* VALUES */
+.value {
+    font-size: 2em;
+    font-weight: bold;
+    color: #00d4ff;
+    margin: 10px 0;
+}
+
+/* LIVE COLORS */
+.power { color: #2196f3; font-weight: 600; }
+.voltage { color: #f44336; font-weight: 600; }
+.current { color: #ff9800; font-weight: 600; }
+
+/* STATUS BADGE */
+.status-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.on-status {
+    background: linear-gradient(135deg, #00e676 0%, #1de9b6 100%);
+    color: black;
+    box-shadow: 0 0 15px #00e676;
+}
+
+.off-status {
+    background: linear-gradient(135deg, #ff1744 0%, #ff6e40 100%);
+    color: white;
+    box-shadow: 0 0 15px #ff1744;
+}
+
+/* ALERT BOX */
+#alertBox {
+    display: block;
+    background: rgba(255,0,0,0.08);
+    border-radius: 15px;
+    padding: 15px;
+    border: 2px solid #ff1744;
+    grid-column: span 1;
+    transition: all 0.3s ease;
+}
+
+#alertBox.alert-safe {
+    border: 2px solid #00e676 !important;
+    background: rgba(0, 230, 118, 0.08) !important;
+    box-shadow: 0 0 15px rgba(0, 230, 118, 0.3) !important;
+}
+
+#alertMessage {
+    margin: 0;
+    line-height: 1.6;
+    font-size: 0.95em;
+}
+
+/* CHART */
+canvas {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 10px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    h2 {
+        font-size: 1.5em;
+    }
+    
+    .container {
+        grid-template-columns: 1fr;
+        padding: 15px;
+    }
+    
+    .value {
+        font-size: 1.6em;
+    }
+    
+    button {
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+}
+    </style>
 </head>
+
 <body>
 
-<h2> SMART GRID MANAGEMENT SYSTEM</h2>
+<h2>⚡ Smart Grid Energy Control System</h2>
 
 <div class="container">
 
     <!-- DEVICE CONTROL -->
     <div class="card">
-        <h3> Device Control</h3>
+        <h3>🔌 Device Control</h3>
         <button class="on" onclick="turnOn()">ON</button>
         <button class="off" onclick="turnOff()">OFF</button>
         <p>Status: <span id="status" class="status-badge">Loading...</span></p>
@@ -23,7 +195,7 @@
 
     <!-- ENERGY -->
     <div class="card">
-        <h3> Energy</h3>
+        <h3>⚡ Energy</h3>
         <p>Energy Used</p>
         <div class="value"><span id="energy">0</span> kWh</div>
 
@@ -33,7 +205,7 @@
 
     <!-- LIVE DATA -->
     <div class="card">
-        <h3> Live Data</h3>
+        <h3>📊 Live Data</h3>
         <p class="power">Power: <span id="power">0</span> W</p>
         <p class="voltage">Voltage: <span id="voltage">0</span> V</p>
         <p class="current">Current: <span id="current">0</span> A</p>
@@ -41,18 +213,326 @@
 
     <!-- ALERTS -->
     <div class="card" id="alertBox">
-        <h3> System Alerts</h3>
-        <p id="alertMessage">No alerts</p>
+        <h3>🚨 System Alerts</h3>
+        <p id="alertMessage">✅ System Normal</p>
     </div>
 
     <!-- GRAPH -->
-    <div class="card" style="grid-column: span 2;">
-        <h3> Real-Time Monitoring</h3>
+    <div class="card" style="grid-column: 1 / -1;">
+        <h3>📈 Real-Time Monitoring</h3>
         <canvas id="chart"></canvas>
     </div>
 
 </div>
 
-<script src="scripts.js"></script>
+<script>
+// ============================================
+// SMART GRID DASHBOARD - MAIN SCRIPT
+// ============================================
+
+// Configuration
+const API_BASE_URL = window.location.origin;
+const DATA_FETCH_INTERVAL = 3000;
+const STATUS_UPDATE_INTERVAL = 2000;
+const COST_PER_KWH = 25;
+
+// Chart Data
+let labels = [];
+let powerData = [];
+let voltageData = [];
+let currentData = [];
+let totalEnergy = 0;
+let chart = null;
+
+// Initialize Chart
+function initChart() {
+    const ctx = document.getElementById('chart');
+    if (!ctx) {
+        console.error('Chart canvas not found');
+        return;
+    }
+
+    chart = new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Power (W)',
+                    data: powerData,
+                    borderColor: '#2196f3',
+                    backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                    tension: 0.4,
+                    borderWidth: 3,
+                    fill: true,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#2196f3',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                },
+                {
+                    label: 'Voltage (V)',
+                    data: voltageData,
+                    borderColor: '#f44336',
+                    backgroundColor: 'rgba(244, 67, 54, 0.1)',
+                    tension: 0.4,
+                    borderWidth: 3,
+                    fill: true,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#f44336',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                },
+                {
+                    label: 'Current (A)',
+                    data: currentData,
+                    borderColor: '#ff9800',
+                    backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                    tension: 0.4,
+                    borderWidth: 3,
+                    fill: true,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#ff9800',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            animation: {
+                duration: 0
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: 'white',
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        padding: 20
+                    }
+                },
+                filler: {
+                    propagate: true
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: 'white',
+                        font: {
+                            size: 12
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)',
+                        drawBorder: false
+                    }
+                },
+                y: {
+                    ticks: {
+                        color: 'white',
+                        font: {
+                            size: 12
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)',
+                        drawBorder: false
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Sound Alert
+function playBeep() {
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.5);
+    } catch (err) {
+        console.warn('Audio context not available:', err);
+    }
+}
+
+// Alert Logic
+function checkAlerts(power, voltage, current, deviceOn) {
+    const alerts = [];
+
+    if (voltage > 240) alerts.push("⚠️ High Voltage! (>240V)");
+    if (voltage < 190) alerts.push("⚠️ Low Voltage! (<190V)");
+    if (current > 2) alerts.push("⚠️ High Current! (>2A)");
+    if (power > 400) alerts.push("⚠️ High Power! (>400W)");
+    if (!deviceOn && power > 10) alerts.push("⚠️ Power while device OFF!");
+
+    const alertBox = document.getElementById('alertBox');
+    const alertMsg = document.getElementById('alertMessage');
+
+    if (alerts.length > 0) {
+        alertBox.classList.remove('alert-safe');
+        alertMsg.innerHTML = alerts.join('<br>');
+        playBeep();
+    } else {
+        alertBox.classList.add('alert-safe');
+        alertMsg.innerHTML = '✅ System Normal - All Parameters OK';
+    }
+}
+
+// Fetch Data
+async function fetchData() {
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/data/all/?limit=1`);
+
+        if (!res.ok) {
+            throw new Error(`API Error: ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        if (!data || data.length === 0) {
+            console.warn('No data received');
+            return;
+        }
+
+        const latest = data[0];
+        const time = new Date(latest.timestamp).toLocaleTimeString();
+
+        labels.push(time);
+        powerData.push(latest.power);
+        voltageData.push(latest.voltage);
+        currentData.push(latest.current);
+
+        document.getElementById('power').innerText = latest.power.toFixed(2);
+        document.getElementById('voltage').innerText = latest.voltage.toFixed(2);
+        document.getElementById('current').innerText = latest.current.toFixed(2);
+
+        totalEnergy += (latest.power / 1000) * (5 / 3600);
+        document.getElementById('energy').innerText = totalEnergy.toFixed(4);
+
+        const cost = totalEnergy * COST_PER_KWH;
+        document.getElementById('cost').innerText = cost.toFixed(2);
+
+        if (labels.length > 20) {
+            labels.shift();
+            powerData.shift();
+            voltageData.shift();
+            currentData.shift();
+        }
+
+        if (chart) {
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = powerData;
+            chart.data.datasets[1].data = voltageData;
+            chart.data.datasets[2].data = currentData;
+            chart.update();
+        }
+
+        const statusRes = await fetch(`${API_BASE_URL}/api/device/status/`);
+        const statusData = await statusRes.json();
+
+        checkAlerts(latest.power, latest.voltage, latest.current, statusData.on);
+
+    } catch (err) {
+        console.error('Error fetching data:', err);
+        document.getElementById('power').innerText = 'N/A';
+        document.getElementById('voltage').innerText = 'N/A';
+        document.getElementById('current').innerText = 'N/A';
+    }
+}
+
+// Device Control
+async function turnOn() {
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/device/on/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        if (res.ok) {
+            updateStatus();
+        }
+    } catch (err) {
+        console.error('Error turning on device:', err);
+    }
+}
+
+async function turnOff() {
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/device/off/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        if (res.ok) {
+            updateStatus();
+        }
+    } catch (err) {
+        console.error('Error turning off device:', err);
+    }
+}
+
+// Update Status
+async function updateStatus() {
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/device/status/`);
+
+        if (!res.ok) {
+            throw new Error(`API Error: ${res.status}`);
+        }
+
+        const data = await res.json();
+        const statusEl = document.getElementById('status');
+
+        if (data.on) {
+            statusEl.innerText = 'ON';
+            statusEl.className = 'status-badge on-status';
+        } else {
+            statusEl.innerText = 'OFF';
+            statusEl.className = 'status-badge off-status';
+        }
+    } catch (err) {
+        console.error('Error updating status:', err);
+    }
+}
+
+// Initialize
+function init() {
+    console.log('Dashboard initialized');
+    initChart();
+    updateStatus();
+    fetchData();
+    setInterval(fetchData, DATA_FETCH_INTERVAL);
+    setInterval(updateStatus, STATUS_UPDATE_INTERVAL);
+}
+
+// Start when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
+</script>
+
 </body>
 </html>

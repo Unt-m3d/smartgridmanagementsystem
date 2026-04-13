@@ -10,13 +10,12 @@ import os
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('energy.urls')),  # API routes under /api/
-    path('', TemplateView.as_view(template_name='index.html'), name='home'),  # Home page serves frontend
+    path('api/', include('energy.urls')),
+    path('', TemplateView.as_view(template_name='index.html'), name='home'),
 ]
 
 # Serve static files in development
 if settings.DEBUG:
-    # Convert WindowsPath to string for Django's static() function
-    static_dirs = [str(d) for d in settings.STATICFILES_DIRS]
-    urlpatterns += static('/static/', document_root=str(settings.STATIC_ROOT))
-    urlpatterns += static('/frontend/', document_root=static_dirs[0])
+    # Serve frontend folder as static files
+    urlpatterns += static('/frontend/', document_root=os.path.join(settings.BASE_DIR, 'frontend'))
+    urlpatterns += static(settings.STATIC_URL, document_root=os.path.join(settings.BASE_DIR, 'staticfiles'))
