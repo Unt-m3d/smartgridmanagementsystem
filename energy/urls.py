@@ -1,12 +1,11 @@
-import django.urls
+from django.urls import path
 from . import views
 
 urlpatterns = [
-    django.urls.path('', views.dashboard, name='dashboard'),
-    django.urls.path('api/data/', views.receive_data),
-    django.urls.path('api/data/all/', views.get_data),
-
-    django.urls.path('api/device/on/', views.turn_on),
-    django.urls.path('api/device/off/', views.turn_off),
-    django.urls.path('api/device/status/', views.get_status),
+    # API endpoints
+    path('data/', views.receive_data, name='receive_data'),
+    path('data/all/', views.get_data, name='get_data'),
+    path('device/on/', views.turn_on, name='turn_on'),
+    path('device/off/', views.turn_off, name='turn_off'),
+    path('device/status/', views.get_status, name='get_status'),
 ]

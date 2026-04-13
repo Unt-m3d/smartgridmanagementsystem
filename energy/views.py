@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.http import HttpResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import EnergyData, DeviceStatus
@@ -6,6 +7,7 @@ from .serializers import EnergyDataSerializer
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 def get_device_status():
     """Get current device status from database"""
@@ -19,6 +21,7 @@ def get_device_status():
         logger.error(f"Error getting device status: {str(e)}")
         return True
 
+
 def set_device_status(is_on):
     """Set device status in database"""
     try:
@@ -29,6 +32,7 @@ def set_device_status(is_on):
     except Exception as e:
         logger.error(f"Error setting device status: {str(e)}")
 
+
 @api_view(['POST'])
 def receive_data(request):
     """Save energy data with validation"""
@@ -38,7 +42,7 @@ def receive_data(request):
             serializer.save()
             logger.info("Energy data saved successfully")
             return Response({"message": "Data saved successfully"}, status=201)
-        
+
         logger.warning(f"Validation error: {serializer.errors}")
         return Response({
             "error": "Invalid data",
@@ -51,12 +55,13 @@ def receive_data(request):
             "details": str(e)
         }, status=500)
 
+
 @api_view(['GET'])
 def get_data(request):
     """Fetch energy data with pagination"""
     try:
         limit = request.query_params.get('limit', 100)
-        
+
         try:
             limit = int(limit)
             if limit <= 0:
@@ -66,23 +71,24 @@ def get_data(request):
         except ValueError:
             logger.warning(f"Invalid limit parameter: {limit}")
             limit = 100
-        
+
         data = EnergyData.objects.all().order_by('-timestamp')[:limit]
-        
+
         if not data.exists():
             logger.info("No energy data found")
             return Response([], status=200)
-        
+
         serializer = EnergyDataSerializer(data, many=True)
         logger.info(f"Retrieved {len(serializer.data)} energy records")
         return Response(serializer.data, status=200)
-    
+
     except Exception as e:
         logger.error(f"Error fetching data: {str(e)}")
         return Response({
             "error": "Failed to fetch data",
             "details": str(e)
         }, status=500)
+
 
 @api_view(['POST'])
 def turn_on(request):
@@ -102,6 +108,7 @@ def turn_on(request):
             "details": str(e)
         }, status=500)
 
+
 @api_view(['POST'])
 def turn_off(request):
     """Turn device OFF and save to database"""
@@ -120,6 +127,7 @@ def turn_off(request):
             "details": str(e)
         }, status=500)
 
+
 @api_view(['GET'])
 def get_status(request):
     """Get current device status from database"""
@@ -137,10 +145,11 @@ def get_status(request):
             "details": str(e)
         }, status=500)
 
+
 def dashboard(request):
     """Render dashboard template"""
     try:
         return render(request, 'dashboard.html')
     except Exception as e:
         logger.error(f"Error rendering dashboard: {str(e)}")
-        return render(request, 'error.html', {'error': str(e)}, status=500)
+        return HttpResponse(f"<h1>Error</h1><p>{str(e)}</p>", status=500)

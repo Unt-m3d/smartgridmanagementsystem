@@ -1,0 +1,226 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #0a0f1c 0%, #1a1f3a 100%);
+    color: white;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+h2 {
+    text-align: center;
+    margin: 20px 0;
+    font-size: 2.5em;
+    text-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+}
+
+h3 {
+    margin-bottom: 15px;
+    font-size: 1.3em;
+}
+
+p {
+    margin: 10px 0;
+    font-size: 0.95em;
+}
+
+/* GRID CONTAINER */
+.container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* CARDS */
+.card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.57);
+    transform: translateY(-5px);
+}
+
+/* BUTTONS */
+button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    margin: 5px 5px 5px 0;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.on {
+    background: linear-gradient(135deg, #00e676 0%, #1de9b6 100%);
+    box-shadow: 0 0 20px rgba(0, 230, 118, 0.5);
+}
+
+.on:hover {
+    box-shadow: 0 0 30px rgba(0, 230, 118, 0.8);
+    transform: scale(1.05);
+}
+
+.on:active {
+    transform: scale(0.98);
+}
+
+.off {
+    background: linear-gradient(135deg, #ff1744 0%, #ff6e40 100%);
+    box-shadow: 0 0 20px rgba(255, 23, 68, 0.5);
+}
+
+.off:hover {
+    box-shadow: 0 0 30px rgba(255, 23, 68, 0.8);
+    transform: scale(1.05);
+}
+
+.off:active {
+    transform: scale(0.98);
+}
+
+/* VALUES */
+.value {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #2196f3;
+    margin: 15px 0;
+    text-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
+}
+
+/* LIVE DATA COLORS */
+.power {
+    color: #2196f3;
+    font-weight: 500;
+}
+
+.voltage {
+    color: #f44336;
+    font-weight: 500;
+}
+
+.current {
+    color: #ff9800;
+    font-weight: 500;
+}
+
+/* STATUS BADGE */
+.status-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.on-status {
+    background: linear-gradient(135deg, #00e676 0%, #1de9b6 100%);
+    color: black;
+    box-shadow: 0 0 15px rgba(0, 230, 118, 0.6);
+}
+
+.off-status {
+    background: linear-gradient(135deg, #ff1744 0%, #ff6e40 100%);
+    color: white;
+    box-shadow: 0 0 15px rgba(255, 23, 68, 0.6);
+}
+
+/* ALERT BOX */
+#alertBox {
+    background: rgba(255, 0, 0, 0.05);
+    border-radius: 15px;
+    padding: 15px;
+    border: 2px solid #ff1744;
+    grid-column: span 1;
+}
+
+#alertBox.alert-safe {
+    border: 2px solid #00e676 !important;
+    background: rgba(0, 230, 118, 0.05) !important;
+    box-shadow: 0 0 20px rgba(0, 230, 118, 0.3) !important;
+}
+
+#alertMessage {
+    font-size: 1.1em;
+    line-height: 1.6;
+}
+
+/* CHART */
+canvas {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 10px;
+    max-height: 400px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+    .card {
+        grid-column: span 1 !important;
+    }
+
+    h2 {
+        font-size: 2em;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        grid-template-columns: 1fr;
+        padding: 10px;
+        gap: 15px;
+    }
+
+    h2 {
+        font-size: 1.5em;
+        margin: 10px 0;
+    }
+
+    .value {
+        font-size: 2em;
+    }
+
+    button {
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+}
+
+/* LOADING STATE */
+.loading {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* SMOOTH TRANSITIONS */
+span[id] {
+    transition: color 0.2s ease;
+}

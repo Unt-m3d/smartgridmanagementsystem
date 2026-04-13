@@ -3,37 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Grid Dashboard</title>
+    <title>SMART GRID MANAGEMENT SYSTEM</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <header>
-        <h1>Smart Grid Dashboard</h1>
-    </header>
-    <main>
-        <section id="charts">
-            <!-- Dashboard charts will be rendered here -->
-            <div id="lineChart"></div>
-            <div id="barChart"></div>
-            <div id="pieChart"></div>
-        </section>
-        <section id="controls">
-            <h2>Controls</h2>
-            <button id="refresh">Refresh Data</button>
-        </section>
-        <section id="alerts">
-            <h2>Alerts</h2>
-            <div id="alertContainer">
-                <!-- Alerts will be displayed here -->
-            </div>
-        </section>
-        <section id="realtime-monitoring">
-            <h2>Real-Time Monitoring</h2>
-            <div id="monitoringData">
-                <!-- Real-time data will be displayed here -->
-            </div>
-        </section>
-    </main>
-    <script src="script.js"></script>
+
+<h2> SMART GRID MANAGEMENT SYSTEM</h2>
+
+<div class="container">
+
+    <!-- DEVICE CONTROL -->
+    <div class="card">
+        <h3> Device Control</h3>
+        <button class="on" onclick="turnOn()">ON</button>
+        <button class="off" onclick="turnOff()">OFF</button>
+        <p>Status: <span id="status" class="status-badge">Loading...</span></p>
+    </div>
+
+    <!-- ENERGY -->
+    <div class="card">
+        <h3> Energy</h3>
+        <p>Energy Used</p>
+        <div class="value"><span id="energy">0</span> kWh</div>
+
+        <p>Cost</p>
+        <div class="value">KES <span id="cost">0</span></div>
+    </div>
+
+    <!-- LIVE DATA -->
+    <div class="card">
+        <h3> Live Data</h3>
+        <p class="power">Power: <span id="power">0</span> W</p>
+        <p class="voltage">Voltage: <span id="voltage">0</span> V</p>
+        <p class="current">Current: <span id="current">0</span> A</p>
+    </div>
+
+    <!-- ALERTS -->
+    <div class="card" id="alertBox">
+        <h3> System Alerts</h3>
+        <p id="alertMessage">No alerts</p>
+    </div>
+
+    <!-- GRAPH -->
+    <div class="card" style="grid-column: span 2;">
+        <h3> Real-Time Monitoring</h3>
+        <canvas id="chart"></canvas>
+    </div>
+
+</div>
+
+<script src="scripts.js"></script>
 </body>
 </html>
