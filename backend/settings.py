@@ -18,10 +18,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'energy',
     'rest_framework',
     'corsheaders',
-    # REMOVED: 'drf_yasg' - causes issues with Python 3.14
+    'energy',
+    'analytics',
+    'notifications',
+    'renewable',
 ]
 
 MIDDLEWARE = [
@@ -98,7 +100,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 100,
 }
 
-# Alert Settings
 ALERT_SETTINGS = {
     'HIGH_VOLTAGE': 240,
     'LOW_VOLTAGE': 190,
@@ -106,10 +107,8 @@ ALERT_SETTINGS = {
     'HIGH_POWER': 400,
 }
 
-# Email Settings (simple backend for now)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# SMS/Email Settings
 TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
 TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')
 TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER', '')
@@ -117,6 +116,5 @@ TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER', '')
 SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@smartgrid.com')
 
-# ML Models Path
 ML_MODELS_PATH = BASE_DIR / 'ml_models'
 os.makedirs(ML_MODELS_PATH, exist_ok=True)

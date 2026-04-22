@@ -5,8 +5,8 @@ from energy.models import EnergyData
 from .models import EnergyTrend, EnergyPrediction
 from .serializers import EnergyTrendSerializer, EnergyPredictionSerializer
 from django.utils import timezone
-from datetime import timedelta
 from django.db import models
+from datetime import timedelta
 import logging
 
 logger = logging.getLogger(__name__)

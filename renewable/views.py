@@ -66,3 +66,33 @@ def get_carbon_savings(request):
         return Response({'success': True, 'data': serializer.data}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+def get_renewable_percentage(request):
+    """Calculate renewable energy as percentage of total generation"""
+    try:
+        renewable_data = RenewableData.objects.all()
+        
+        if not renewable_data.exists():
+            return Response({
+                'success': True,
+                'data': {
+                    'renewable_percentage': 0.0,
+                    'total_renewable_energy': 0.0,
+                    'count': 0
+                }
+            }, status=status.HTTP_200_OK)
+        
+        total_renewable = sum([float(d.energy_generated) for d in renewable_data])
+        
+        return Response({
+            'success': True,
+            'data': {
+                'renewable_percentage': 100.0,
+                'total_renewable_energy': total_renewable,
+                'count': renewable_data.count()
+            }
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Error calculating renewable percentage: {str(e)}")
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
