@@ -2,7 +2,12 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 class RenewableSource(models.Model):
-    SOURCE_TYPES = [('solar', 'Solar Panel'), ('wind', 'Wind Turbine'), ('hydro', 'Hydroelectric'), ('other', 'Other')]
+    SOURCE_TYPES = [
+        ('SOLAR', 'Solar Panel'),
+        ('WIND', 'Wind Turbine'),
+        ('HYDRO', 'Hydroelectric'),
+        ('OTHER', 'Other')
+    ]
     name = models.CharField(max_length=100)
     source_type = models.CharField(max_length=20, choices=SOURCE_TYPES)
     capacity = models.FloatField(validators=[MinValueValidator(0)])
@@ -13,8 +18,11 @@ class RenewableSource(models.Model):
     def __str__(self):
         return f"{self.name}"
 
+    class Meta:
+        ordering = ['-created_at']
+
 class RenewableData(models.Model):
-    source = models.ForeignKey(RenewableSource, on_delete=models.CASCADE)
+    source = models.ForeignKey(RenewableSource, on_delete=models.CASCADE, related_name='data')
     power_generated = models.FloatField(validators=[MinValueValidator(0)])
     efficiency = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(100)], default=0)
     timestamp = models.DateTimeField(auto_now_add=True)
@@ -34,6 +42,8 @@ class CarbonSavings(models.Model):
 
     class Meta:
         ordering = ['-date']
+        verbose_name = "Carbon Savings"
+        verbose_name_plural = "Carbon Savings"
 
     def __str__(self):
-        return f"{self.date}"
+        return f"{self.date} - {self.carbon_saved_kg}kg CO2"

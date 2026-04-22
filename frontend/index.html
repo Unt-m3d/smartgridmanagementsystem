@@ -392,10 +392,10 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
                     
                     <label>Source Type:</label>
                     <select id="renewable-type">
-                        <option value="solar">☀️ Solar Panel</option>
-                        <option value="wind">💨 Wind Turbine</option>
-                        <option value="hydro">💧 Hydroelectric</option>
-                        <option value="other">🔋 Other</option>
+                        <option value="SOLAR">☀️ Solar Panel</option>
+                        <option value="WIND">💨 Wind Turbine</option>
+                        <option value="HYDRO">💧 Hydroelectric</option>
+                        <option value="OTHER">🔋 Other</option>
                     </select>
                     
                     <label>Capacity (kW):</label>
@@ -437,7 +437,6 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
                     </div>
                     <div id="carbon-stats" class="stats-box"></div>
                     <button onclick="getCarbonSavings()">📊 Load Carbon Data</button>
-                    <button onclick="getRenewablePercentage()">🌍 Check Renewable %</button>
                 </div>
             </div>
         </div>
@@ -486,7 +485,7 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
                 })
                 .catch(e => handleError(e, 'refreshDashboard'));
 
-            fetch(`${API_BASE}/status/`)
+            fetch(`${API_BASE}/device/status/`)
                 .then(r => {
                     if (!r.ok) throw new Error(`HTTP ${r.status}`);
                     return r.json();
@@ -498,7 +497,7 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
         }
 
         function turnDeviceOn() {
-            fetch(`${API_BASE}/turn-on/`, { method: 'POST' })
+            fetch(`${API_BASE}/device/on/`, { method: 'POST' })
                 .then(r => {
                     if (!r.ok) throw new Error(`HTTP ${r.status}`);
                     return r.json();
@@ -511,7 +510,7 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
         }
 
         function turnDeviceOff() {
-            fetch(`${API_BASE}/turn-off/`, { method: 'POST' })
+            fetch(`${API_BASE}/device/off/`, { method: 'POST' })
                 .then(r => {
                     if (!r.ok) throw new Error(`HTTP ${r.status}`);
                     return r.json();
@@ -524,17 +523,15 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
         }
 
         function getStatistics() {
-            fetch(`${API_BASE}/analytics/statistics/`)
+            fetch(`${API_BASE}/summary/`)
                 .then(r => {
                     if (!r.ok) throw new Error(`HTTP ${r.status}`);
                     return r.json();
                 })
                 .then(data => {
-                    if (data.success) {
-                        document.getElementById('stat-avg').textContent = data.statistics.last_7_days.avg_power.toFixed(2) + ' W';
-                        document.getElementById('stat-peak').textContent = '5000 W';
-                        document.getElementById('stat-points').textContent = data.statistics.last_7_days.data_points;
-                    }
+                    document.getElementById('stat-avg').textContent = data.average_power.toFixed(2) + ' W';
+                    document.getElementById('stat-peak').textContent = data.peak_power.toFixed(2) + ' W';
+                    document.getElementById('stat-points').textContent = data.records;
                 })
                 .catch(e => handleError(e, 'getStatistics'));
         }
@@ -549,14 +546,16 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
                     return r.json();
                 })
                 .then(data => {
-                    if (!data.data || data.data.length === 0) {
+                    const trendsData = data.data || data;
+                    
+                    if (!trendsData || trendsData.length === 0) {
                         alert('No data available. Calculate trends first!');
                         return;
                     }
                     
-                    const dates = data.data.map(d => d.date);
-                    const avgPower = data.data.map(d => d.avg_power);
-                    const peakPower = data.data.map(d => d.peak_power);
+                    const dates = trendsData.map(d => d.date || d.timestamp?.split('T')[0]);
+                    const avgPower = trendsData.map(d => d.avg_power || d.average_power);
+                    const peakPower = trendsData.map(d => d.peak_power);
 
                     const ctx = document.getElementById('dailyTrendsChart').getContext('2d');
                     if (dailyChart) dailyChart.destroy();
@@ -647,29 +646,27 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
                     return r.json();
                 })
                 .then(data => {
-                    if (data.success) {
-                        alert('✅ Today\'s trends calculated!');
-                        loadDailyTrends();
-                    }
+                    alert('✅ Today\'s trends calculated!');
+                    loadDailyTrends();
                 })
                 .catch(e => handleError(e, 'calculateTrends'));
         }
 
         // ===== PREDICTION FUNCTIONS =====
         function loadPredictions() {
-            fetch(`${API_BASE}/analytics/predict/`)
+            fetch(`${API_BASE}/predictions/`)
                 .then(r => {
                     if (!r.ok) throw new Error(`HTTP ${r.status}`);
                     return r.json();
                 })
                 .then(data => {
-                    if (!data.data || data.data.length === 0) {
+                    if (!data || data.length === 0) {
                         alert('Not enough data for predictions. Generate more data first!');
                         return;
                     }
 
-                    const hours = data.data.map(d => d.hour + ':00');
-                    const predictions = data.data.map(d => d.predicted_power);
+                    const hours = data.map((d, i) => i + ':00');
+                    const predictions = data.map(d => d.predicted_power);
 
                     const ctx = document.getElementById('predictionChart').getContext('2d');
                     if (predictionChartInstance) predictionChartInstance.destroy();
@@ -699,10 +696,10 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
                         }
                     });
 
-                    const detailsHtml = data.data.slice(0, 12).map(d => 
+                    const detailsHtml = data.slice(0, 12).map((d, i) => 
                         `<div class="metric">
-                            <span class="metric-label">Hour ${String(d.hour).padStart(2, '0')}:00</span>
-                            <span class="metric-value">${d.predicted_power.toFixed(2)}W (${(d.confidence*100).toFixed(0)}%)</span>
+                            <span class="metric-label">Hour ${String(i).padStart(2, '0')}:00</span>
+                            <span class="metric-value">${d.predicted_power.toFixed(2)}W (${(d.confidence_score*100).toFixed(0)}%)</span>
                         </div>`
                     ).join('');
                     document.getElementById('prediction-details').innerHTML = detailsHtml;
@@ -987,27 +984,8 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
                 .catch(e => console.error('Error:', e));
         }
 
-        function getRenewablePercentage() {
-            fetch(`${API_BASE}/renewable/renewable-percentage/`)
-                .then(r => {
-                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                    return r.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        alert(`🌍 Renewable Energy: ${data.renewable_percentage.toFixed(2)}%\nTotal: ${data.renewable_power.toFixed(2)}W / ${data.total_consumption.toFixed(2)}W`);
-                    }
-                })
-                .catch(e => handleError(e, 'getRenewablePercentage'));
-        }
-
-        // Initialize on page load
-        window.addEventListener('load', () => {
-            console.log('Page loaded, initializing...');
-            refreshDashboard();
-            getRenewableSources();
-            getAlertRules();
-        });
+        // Load initial data
+        refreshDashboard();
     </script>
 </body>
 </html>
