@@ -1,8 +1,6 @@
 from django.urls import path
 from . import views
 
-app_name = 'notifications'
-
 urlpatterns = [
     path('register-contact/', views.register_contact, name='register-contact'),
     path('create-rule/', views.create_alert_rule, name='create-rule'),

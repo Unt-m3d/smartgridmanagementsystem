@@ -1,6 +1,59 @@
+# Python
 __pycache__/
-*.pyc
-db.sqlite3
-.DS_Store
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
 *.egg-info/
+.installed.cfg
+*.egg
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+/media
+/staticfiles
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node (if using frontend build tools)
 node_modules/
+npm-debug.log
+
+# Redis
+dump.rdb
+
+# Celery
+celerybeat-schedule
+
+# Typo directories to ignore
+notificatios/
+simulatorr/
