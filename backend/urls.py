@@ -14,6 +14,9 @@ urlpatterns = [
     path('api/analytics/', include('analytics.urls')),
     path('api/notifications/', include('notifications.urls')),
     path('api/renewable/', include('renewable.urls')),
+    
+    # ✅ ADDED: Route for mobile.html
+    path('mobile/', TemplateView.as_view(template_name='mobile.html'), name='mobile'),
     path('', TemplateView.as_view(template_name='index.html'), name='home'),
 ]
 

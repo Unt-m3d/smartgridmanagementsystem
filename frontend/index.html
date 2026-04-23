@@ -40,6 +40,27 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
             text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
             letter-spacing: 2px;
         }
+
+        .status-indicator {
+            font-size: 1em;
+            margin-top: 10px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: bold;
+        }
+
+        .status-online {
+            background: rgba(16, 185, 129, 0.3);
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+
+        .status-offline {
+            background: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
         
         .nav-tabs {
             display: flex;
@@ -251,6 +272,14 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
             height: 300px;
             margin: 20px 0;
         }
+
+        .no-data-message {
+            text-align: center;
+            color: #ef4444;
+            padding: 40px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -258,6 +287,7 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
         <h1>⚡ Smart Grid Management System</h1>
         <p>Complete Energy Monitoring & Control Dashboard</p>
         <div class="real-time-clock" id="realtimeClock">--:--:--</div>
+        <div class="status-indicator" id="statusIndicator">🔌 Checking...</div>
     </div>
 
     <div class="nav-tabs">
@@ -318,9 +348,10 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
 
             <!-- Live Graph Below Real-Time Clock -->
             <div class="live-graph-container">
-                <h2>📊 Real-Time Power Graph (Updates Every Second)</h2>
-                <div class="live-chart-container">
-                    <canvas id="liveChart"></canvas>
+                <h2>📊 Real-Time Power Graph (Live from Backend)</h2>
+                <div id="liveGraphMessage">
+                    <canvas id="liveChart" style="display:none;"></canvas>
+                    <div class="no-data-message" id="noDataMessage" style="display:none;">⚠️ Server is offline. Start the backend to see live data.</div>
                 </div>
             </div>
         </div>
@@ -489,6 +520,38 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
         
         console.log('API Base URL:', API_BASE);
 
+        let isServerOnline = false;
+        let liveChartUpdateInterval = null;
+        let liveChartInstance = null;
+
+        // ===== CHECK SERVER STATUS =====
+        function checkServerStatus() {
+            fetch(`${API_BASE}/data/all/?limit=1`)
+                .then(r => {
+                    isServerOnline = r.ok;
+                    updateStatusIndicator();
+                })
+                .catch(e => {
+                    isServerOnline = false;
+                    updateStatusIndicator();
+                });
+        }
+
+        function updateStatusIndicator() {
+            const indicator = document.getElementById('statusIndicator');
+            if (isServerOnline) {
+                indicator.textContent = '🟢 Server Online';
+                indicator.className = 'status-indicator status-online';
+            } else {
+                indicator.textContent = '🔴 Server Offline';
+                indicator.className = 'status-indicator status-offline';
+            }
+        }
+
+        // Check server status every 3 seconds
+        setInterval(checkServerStatus, 3000);
+        checkServerStatus();
+
         // ===== REAL-TIME CLOCK =====
         function updateClock() {
             const now = new Date();
@@ -500,26 +563,23 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
 
         // Update clock every second
         setInterval(updateClock, 1000);
-        updateClock(); // Initial call
+        updateClock();
 
         // ===== LIVE CHART =====
-        let liveChartInstance = null;
-        let liveChartData = Array.from({length: 30}, () => Math.random() * 3000 + 1000);
-        let liveChartLabels = Array.from({length: 30}, (_, i) => i);
-
         function initLiveChart() {
             const ctx = document.getElementById('liveChart');
             if (!ctx) return;
             
             if (liveChartInstance) liveChartInstance.destroy();
+            ctx.style.display = 'block';
             
             liveChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: liveChartLabels,
+                    labels: [],
                     datasets: [{
                         label: 'Real-Time Power (W)',
-                        data: liveChartData,
+                        data: [],
                         borderColor: '#00d4ff',
                         backgroundColor: 'rgba(0, 212, 255, 0.1)',
                         borderWidth: 3,
@@ -561,27 +621,60 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
             });
         }
 
-        // Update live chart every second
-        function updateLiveChart() {
-            if (!liveChartInstance) return;
+        function startLiveChartUpdates() {
+            if (liveChartUpdateInterval) clearInterval(liveChartUpdateInterval);
             
-            // Add new data point
-            const newValue = Math.random() * 3000 + 1000;
-            liveChartData.push(newValue);
-            liveChartLabels.push(liveChartLabels.length);
-            
-            // Keep only last 30 data points
-            if (liveChartData.length > 30) {
-                liveChartData.shift();
-                liveChartLabels.shift();
-            }
-            
-            liveChartInstance.data.labels = liveChartLabels;
-            liveChartInstance.data.datasets[0].data = liveChartData;
-            liveChartInstance.update();
+            liveChartUpdateInterval = setInterval(() => {
+                if (!isServerOnline) {
+                    stopLiveChartUpdates();
+                    return;
+                }
+
+                fetch(`${API_BASE}/data/all/?limit=1`)
+                    .then(r => {
+                        if (!r.ok) throw new Error('Server error');
+                        return r.json();
+                    })
+                    .then(data => {
+                        if (!liveChartInstance) initLiveChart();
+                        
+                        if (data && data.length > 0) {
+                            const latest = data[0];
+                            const power = latest.power || 0;
+                            const timestamp = new Date().toLocaleTimeString();
+
+                            // Keep only last 30 data points
+                            if (liveChartInstance.data.labels.length >= 30) {
+                                liveChartInstance.data.labels.shift();
+                                liveChartInstance.data.datasets[0].data.shift();
+                            }
+
+                            liveChartInstance.data.labels.push(timestamp);
+                            liveChartInstance.data.datasets[0].data.push(power);
+                            liveChartInstance.update();
+
+                            // Show canvas, hide no-data message
+                            document.getElementById('liveChart').style.display = 'block';
+                            document.getElementById('noDataMessage').style.display = 'none';
+                        }
+                    })
+                    .catch(e => {
+                        console.log('Live chart error:', e);
+                        stopLiveChartUpdates();
+                    });
+            }, 1000);
         }
 
-        setInterval(updateLiveChart, 1000);
+        function stopLiveChartUpdates() {
+            if (liveChartUpdateInterval) {
+                clearInterval(liveChartUpdateInterval);
+                liveChartUpdateInterval = null;
+            }
+            
+            // Show no-data message
+            document.getElementById('liveChart').style.display = 'none';
+            document.getElementById('noDataMessage').style.display = 'block';
+        }
 
         // ===== TAB SWITCHING =====
         function switchTab(tabName) {
@@ -595,9 +688,18 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
             document.getElementById(tabName).classList.add('active');
             event.target.classList.add('active');
 
-            // Initialize live chart when dashboard tab is active
+            // Initialize and start live chart when dashboard tab is active
             if (tabName === 'dashboard') {
-                setTimeout(initLiveChart, 100);
+                setTimeout(() => {
+                    if (!liveChartInstance) initLiveChart();
+                    if (isServerOnline) {
+                        startLiveChartUpdates();
+                    } else {
+                        stopLiveChartUpdates();
+                    }
+                }, 100);
+            } else {
+                stopLiveChartUpdates();
             }
         }
 
@@ -1125,7 +1227,6 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
 
         // Load initial data
         refreshDashboard();
-        initLiveChart();
     </script>
 </body>
 </html>
