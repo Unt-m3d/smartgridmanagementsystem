@@ -31,6 +31,15 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
+
+        .real-time-clock {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #00d4ff;
+            margin-top: 15px;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+            letter-spacing: 2px;
+        }
         
         .nav-tabs {
             display: flex;
@@ -220,12 +229,35 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
             height: 20px;
             cursor: pointer;
         }
+
+        .live-graph-container {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .live-graph-container h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .live-chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>⚡ Smart Grid Management System</h1>
         <p>Complete Energy Monitoring & Control Dashboard</p>
+        <div class="real-time-clock" id="realtimeClock">--:--:--</div>
     </div>
 
     <div class="nav-tabs">
@@ -281,6 +313,14 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
                         <span class="metric-value" id="stat-points">--</span>
                     </div>
                     <button onclick="getStatistics()" style="margin-top: 20px; width: 100%;">Load Statistics</button>
+                </div>
+            </div>
+
+            <!-- Live Graph Below Real-Time Clock -->
+            <div class="live-graph-container">
+                <h2>📊 Real-Time Power Graph (Updates Every Second)</h2>
+                <div class="live-chart-container">
+                    <canvas id="liveChart"></canvas>
                 </div>
             </div>
         </div>
@@ -449,6 +489,100 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
         
         console.log('API Base URL:', API_BASE);
 
+        // ===== REAL-TIME CLOCK =====
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('realtimeClock').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+
+        // Update clock every second
+        setInterval(updateClock, 1000);
+        updateClock(); // Initial call
+
+        // ===== LIVE CHART =====
+        let liveChartInstance = null;
+        let liveChartData = Array.from({length: 30}, () => Math.random() * 3000 + 1000);
+        let liveChartLabels = Array.from({length: 30}, (_, i) => i);
+
+        function initLiveChart() {
+            const ctx = document.getElementById('liveChart');
+            if (!ctx) return;
+            
+            if (liveChartInstance) liveChartInstance.destroy();
+            
+            liveChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: liveChartLabels,
+                    datasets: [{
+                        label: 'Real-Time Power (W)',
+                        data: liveChartData,
+                        borderColor: '#00d4ff',
+                        backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#00d4ff',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 0
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white',
+                                font: { size: 14, weight: 'bold' }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        },
+                        y: {
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            min: 0,
+                            max: 5000
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update live chart every second
+        function updateLiveChart() {
+            if (!liveChartInstance) return;
+            
+            // Add new data point
+            const newValue = Math.random() * 3000 + 1000;
+            liveChartData.push(newValue);
+            liveChartLabels.push(liveChartLabels.length);
+            
+            // Keep only last 30 data points
+            if (liveChartData.length > 30) {
+                liveChartData.shift();
+                liveChartLabels.shift();
+            }
+            
+            liveChartInstance.data.labels = liveChartLabels;
+            liveChartInstance.data.datasets[0].data = liveChartData;
+            liveChartInstance.update();
+        }
+
+        setInterval(updateLiveChart, 1000);
+
         // ===== TAB SWITCHING =====
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => {
@@ -460,6 +594,11 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
             
             document.getElementById(tabName).classList.add('active');
             event.target.classList.add('active');
+
+            // Initialize live chart when dashboard tab is active
+            if (tabName === 'dashboard') {
+                setTimeout(initLiveChart, 100);
+            }
         }
 
         // ===== ERROR HANDLER =====
@@ -986,6 +1125,7 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
 
         // Load initial data
         refreshDashboard();
+        initLiveChart();
     </script>
 </body>
 </html>
