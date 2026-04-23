@@ -3,12 +3,15 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import UserContact, AlertRule
 from .serializers import UserContactSerializer, AlertRuleSerializer
+from .tasks import send_email_alert, send_sms_alert
 import logging
 
 logger = logging.getLogger(__name__)
 
+
 @api_view(['POST'])
 def register_contact(request):
+    """Register user contact for alerts"""
     try:
         serializer = UserContactSerializer(data=request.data)
         if serializer.is_valid():
@@ -29,8 +32,10 @@ def register_contact(request):
             'error': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 @api_view(['POST'])
 def create_alert_rule(request):
+    """Create alert rule"""
     try:
         serializer = AlertRuleSerializer(data=request.data)
         if serializer.is_valid():
@@ -51,8 +56,10 @@ def create_alert_rule(request):
             'error': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 @api_view(['GET'])
 def get_alert_rules(request):
+    """Get all active alert rules"""
     try:
         rules = AlertRule.objects.filter(is_active=True)
         serializer = AlertRuleSerializer(rules, many=True)
@@ -66,8 +73,10 @@ def get_alert_rules(request):
             'error': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 @api_view(['POST'])
 def test_email_alert(request):
+    """Send test email alert"""
     try:
         email = request.data.get('email')
         if not email:
@@ -75,13 +84,21 @@ def test_email_alert(request):
                 'error': 'Email required'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Here you would actually send an email using Django's mail system
-        # For now, we just log it
-        logger.info(f"Test email would be sent to {email}")
+        # Send email asynchronously using Celery
+        send_email_alert.delay(
+            email=email,
+            subject='🔌 Smart Grid Test Alert',
+            message='This is a test email from your Smart Grid Management System.',
+            html_message='''
+            <h2>🔌 Smart Grid Test Alert</h2>
+            <p>This is a test email from your Smart Grid Management System.</p>
+            <p>If you received this, email notifications are working correctly!</p>
+            '''
+        )
         
         return Response({
             'success': True,
-            'message': f'Test email sent to {email}'
+            'message': f'Test email queued for {email}'
         }, status=status.HTTP_200_OK)
     except Exception as e:
         logger.error(f"Error sending test email: {str(e)}")
@@ -89,8 +106,10 @@ def test_email_alert(request):
             'error': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 @api_view(['POST'])
 def test_sms_alert(request):
+    """Send test SMS alert"""
     try:
         phone = request.data.get('phone')
         if not phone:
@@ -98,13 +117,19 @@ def test_sms_alert(request):
                 'error': 'Phone required'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Here you would actually send an SMS using Twilio
-        # For now, we just log it
-        logger.info(f"Test SMS would be sent to {phone}")
+        # Validate phone format (basic check)
+        if not phone.startswith('+'):
+            phone = '+' + phone
+        
+        # Send SMS asynchronously using Celery
+        send_sms_alert.delay(
+            phone=phone,
+            message='🔌 Smart Grid Test: If you received this, SMS alerts are working!'
+        )
         
         return Response({
             'success': True,
-            'message': f'Test SMS sent to {phone}'
+            'message': f'Test SMS queued for {phone}'
         }, status=status.HTTP_200_OK)
     except Exception as e:
         logger.error(f"Error sending test SMS: {str(e)}")

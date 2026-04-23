@@ -1,90 +1,125 @@
+import logging
 from celery import shared_task
 from django.core.mail import send_mail
 from django.conf import settings
-from twilio.rest import Client
-from .models import UserContact, AlertRule
-from energy.models import EnergyData, AlertHistory
-from django.utils import timezone
-import logging
+import os
+
+try:
+    from twilio.rest import Client
+except ImportError:
+    Client = None
+
+try:
+    import sendgrid
+    from sendgrid.helpers.mail import Mail, Email, To, Content
+except ImportError:
+    sendgrid = None
 
 logger = logging.getLogger(__name__)
 
 
-@shared_task
-def send_email_alert(user_email, subject, message):
-    """Send email alert"""
+@shared_task(bind=True, max_retries=3)
+def send_email_alert(self, email, subject, message, html_message=None):
+    """
+    Send email alert using SendGrid or Django's email backend.
+    Falls back to Django email if SendGrid is not configured.
+    """
     try:
-        send_mail(
-            subject,
-            message,
-            settings.EMAIL_HOST_USER,
-            [user_email],
-            fail_silently=False,
-        )
+        logger.info(f"Attempting to send email to {email}: {subject}")
         
-        AlertHistory.objects.create(
-            alert_type='email',
-            message=message,
-            sent_via='email',
-            recipient=user_email,
-            status='sent'
-        )
-        logger.info(f"Email sent to {user_email}")
-        return True
-    except Exception as e:
-        logger.error(f"Failed to send email: {str(e)}")
-        AlertHistory.objects.create(
-            alert_type='email',
-            message=message,
-            sent_via='email',
-            recipient=user_email,
-            status='failed'
-        )
-        return False
+        sendgrid_api_key = settings.SENDGRID_API_KEY
+        
+        if sendgrid_api_key and sendgrid:
+            # Use SendGrid
+            sg = sendgrid.SendGridAPIClient(sendgrid_api_key)
+            
+            from_email = Email(settings.DEFAULT_FROM_EMAIL)
+            to_email = To(email)
+            subject_line = subject
+            plain_text = Content("text/plain", message)
+            
+            if html_message:
+                html_content = Content("text/html", html_message)
+                mail = Mail(from_email, to_email, subject_line, plain_text, html_content)
+            else:
+                mail = Mail(from_email, to_email, subject_line, plain_text)
+            
+            response = sg.client.mail.send.post(request_body=mail.get())
+            logger.info(f"SendGrid response: {response.status_code}")
+            return True
+        else:
+            # Fallback: Use Django's email backend
+            logger.info("Using Django email backend (configure SendGrid for production)")
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                html_message=html_message,
+                fail_silently=False,
+            )
+            logger.info(f"Email sent successfully to {email}")
+            return True
+            
+    except Exception as exc:
+        logger.error(f"Error sending email to {email}: {str(exc)}")
+        # Retry after 5 seconds
+        raise self.retry(exc=exc, countdown=5)
 
 
-@shared_task
-def send_sms_alert(phone_number, message):
-    """Send SMS alert via Twilio"""
+@shared_task(bind=True, max_retries=3)
+def send_sms_alert(self, phone, message):
+    """
+    Send SMS alert using Twilio API.
+    """
     try:
-        if not settings.TWILIO_ACCOUNT_SID or not settings.TWILIO_AUTH_TOKEN:
+        twilio_account_sid = settings.TWILIO_ACCOUNT_SID
+        twilio_auth_token = settings.TWILIO_AUTH_TOKEN
+        twilio_phone_number = settings.TWILIO_PHONE_NUMBER
+        
+        if not all([twilio_account_sid, twilio_auth_token, twilio_phone_number]):
             logger.warning("Twilio credentials not configured")
             return False
         
-        client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-        message_obj = client.messages.create(
+        if not Client:
+            logger.warning("Twilio library not installed")
+            return False
+        
+        logger.info(f"Attempting to send SMS to {phone}")
+        
+        client = Client(twilio_account_sid, twilio_auth_token)
+        sms = client.messages.create(
             body=message,
-            from_=settings.TWILIO_PHONE_NUMBER,
-            to=phone_number
+            from_=twilio_phone_number,
+            to=phone
         )
         
-        AlertHistory.objects.create(
-            alert_type='sms',
-            message=message,
-            sent_via='sms',
-            recipient=phone_number,
-            status='sent'
-        )
-        logger.info(f"SMS sent to {phone_number}")
+        logger.info(f"SMS sent successfully. SID: {sms.sid}")
         return True
-    except Exception as e:
-        logger.error(f"Failed to send SMS: {str(e)}")
-        AlertHistory.objects.create(
-            alert_type='sms',
-            message=message,
-            sent_via='sms',
-            recipient=phone_number,
-            status='failed'
-        )
-        return False
+        
+    except Exception as exc:
+        logger.error(f"Error sending SMS to {phone}: {str(exc)}")
+        # Retry after 5 seconds
+        raise self.retry(exc=exc, countdown=5)
 
 
 @shared_task
-def check_alerts():
-    """Check energy data and send alerts if thresholds are exceeded"""
+def check_energy_alerts():
+    """
+    Periodic task to check energy data against alert thresholds.
+    This should be called by Celery Beat scheduler.
+    """
+    from energy.models import EnergyData
+    from .models import AlertRule, UserContact
+    from django.utils import timezone
+    
     try:
+        logger.info("Checking energy alerts...")
+        
+        # Get latest energy data
         latest_data = EnergyData.objects.latest('timestamp')
         
+        # Get all active alert rules
         alert_rules = AlertRule.objects.filter(is_active=True)
         
         for rule in alert_rules:
@@ -92,64 +127,39 @@ def check_alerts():
             should_alert = False
             message = ""
             
+            # Check voltage alerts
             if rule.alert_type == 'voltage_high' and latest_data.voltage > rule.threshold:
                 should_alert = True
-                message = f"⚠️ HIGH VOLTAGE ALERT: {latest_data.voltage}V (Threshold: {rule.threshold}V)"
+                message = f"⚠️ HIGH VOLTAGE ALERT: {latest_data.voltage}V exceeds threshold {rule.threshold}V"
             
             elif rule.alert_type == 'voltage_low' and latest_data.voltage < rule.threshold:
                 should_alert = True
-                message = f"⚠️ LOW VOLTAGE ALERT: {latest_data.voltage}V (Threshold: {rule.threshold}V)"
+                message = f"⚠️ LOW VOLTAGE ALERT: {latest_data.voltage}V below threshold {rule.threshold}V"
             
             elif rule.alert_type == 'power_high' and latest_data.power > rule.threshold:
                 should_alert = True
-                message = f"⚠️ HIGH POWER ALERT: {latest_data.power}W (Threshold: {rule.threshold}W)"
+                message = f"⚠️ HIGH POWER ALERT: {latest_data.power}W exceeds threshold {rule.threshold}W"
             
+            # Send alerts if threshold crossed
             if should_alert:
                 if contact.receive_email_alerts:
                     send_email_alert.delay(
-                        contact.user_email,
-                        f"Smart Grid Alert: {rule.name}",
-                        message
+                        email=contact.user_email,
+                        subject=f"Smart Grid Alert: {rule.alert_type}",
+                        message=message,
+                        html_message=f"<h2>{message}</h2><p>Timestamp: {latest_data.timestamp}</p>"
                     )
                 
                 if contact.receive_sms_alerts and contact.user_phone:
-                    send_sms_alert.delay(contact.user_phone, message)
+                    send_sms_alert.delay(
+                        phone=contact.user_phone,
+                        message=message
+                    )
+                
+                logger.info(f"Alert sent for rule: {rule.name}")
         
         return True
+        
     except Exception as e:
-        logger.error(f"Error checking alerts: {str(e)}")
-        return False
-
-
-@shared_task
-def send_weekly_report(user_email):
-    """Send weekly energy report"""
-    try:
-        from analytics.models import EnergyTrend
-        from django.db.models import Avg, Max
-        
-        week_ago = timezone.now().date() - timezone.timedelta(days=7)
-        trends = EnergyTrend.objects.filter(date__gte=week_ago)
-        
-        if not trends.exists():
-            return False
-        
-        avg_power = trends.aggregate(Avg('avg_power'))['avg_power__avg'] or 0
-        peak_power = trends.aggregate(Max('peak_power'))['peak_power__max'] or 0
-        
-        report = f"""
-        📊 Weekly Energy Report
-        
-        Period: Last 7 Days
-        Average Power: {avg_power:.2f}W
-        Peak Power: {peak_power:.2f}W
-        Days Analyzed: {trends.count()}
-        
-        Keep monitoring your energy consumption!
-        """
-        
-        send_email_alert.delay(user_email, "Weekly Energy Report", report)
-        return True
-    except Exception as e:
-        logger.error(f"Error sending weekly report: {str(e)}")
+        logger.error(f"Error in check_energy_alerts: {str(e)}")
         return False
