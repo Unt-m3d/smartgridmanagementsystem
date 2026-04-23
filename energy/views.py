@@ -110,6 +110,36 @@ def get_data(request):
         }, status=500)
 
 
+@api_view(['GET'])
+def get_latest_data(request):
+    """Get the latest energy data for real-time dashboard"""
+    try:
+        latest = EnergyData.objects.latest('timestamp')
+        serializer = EnergyDataSerializer(latest)
+        return Response({
+            'success': True,
+            'data': serializer.data
+        }, status=status.HTTP_200_OK)
+    except EnergyData.DoesNotExist:
+        # Return default values if no data exists
+        return Response({
+            'success': False,
+            'message': 'No energy data available yet',
+            'data': {
+                'voltage': 0,
+                'current': 0,
+                'power': 0,
+                'device_on': False,
+                'timestamp': timezone.now()
+            }
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Error fetching latest data: {str(e)}")
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 @api_view(['POST'])
 def turn_on(request):
     """Turn device ON and save to database"""

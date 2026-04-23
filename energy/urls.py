@@ -9,6 +9,9 @@ urlpatterns = [
     path('device/off/', views.turn_off, name='turn_off'),
     path('device/status/', views.get_status, name='get_status'),
     
+    # NEW: Latest energy data endpoint (for real-time dashboard)
+    path('latest/', views.get_latest_data, name='latest'),
+    
     # New endpoints for features
     path('predictions/', views.get_predictions, name='get_predictions'),
     path('predictions/trigger/', views.trigger_prediction, name='trigger_prediction'),
