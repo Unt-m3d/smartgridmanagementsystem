@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -463,14 +463,14 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
                     
                     <label>Source Type:</label>
                     <select id="renewable-type">
-                        <option value="SOLAR">☀️ Solar Panel</option>
-                        <option value="WIND">💨 Wind Turbine</option>
-                        <option value="HYDRO">💧 Hydroelectric</option>
-                        <option value="OTHER">🔋 Other</option>
+                        <option value="solar">☀️ Solar Panel</option>
+                        <option value="wind">💨 Wind Turbine</option>
+                        <option value="hydro">💧 Hydroelectric</option>
+                        <option value="other">🔋 Other</option>
                     </select>
                     
                     <label>Capacity (kW):</label>
-                    <input type="number" id="renewable-capacity" placeholder="10" step="0.1">
+                    <input type="number" id="renewable-capacity" placeholder="10" step="0.1" min="0">
                     
                     <label>Location:</label>
                     <input type="text" id="renewable-location" placeholder="e.g., Building A">
@@ -485,7 +485,7 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
                     <select id="renewable-source-id"></select>
                     
                     <label>Power Generated (Watts):</label>
-                    <input type="number" id="renewable-power" placeholder="5000" step="0.1">
+                    <input type="number" id="renewable-power" placeholder="5000" step="0.1" min="0">
                     
                     <label>Efficiency (%):</label>
                     <input type="number" id="renewable-efficiency" placeholder="85" min="0" max="100" step="0.1">
@@ -844,6 +844,7 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
                 .catch(e => handleError(e, 'loadDailyTrends'));
         }
 
+        // FIXED: Properly load hourly trends data
         function loadHourlyTrends() {
             fetch(`${API_BASE}/analytics/hourly-trends/?hours=24`)
                 .then(r => {
@@ -851,16 +852,26 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
                     return r.json();
                 })
                 .then(data => {
+                    const hourlyData = data.data || [];
+                    
+                    if (!hourlyData || hourlyData.length === 0) {
+                        alert('No hourly data available');
+                        return;
+                    }
+                    
+                    const hours = hourlyData.map(d => d.hour);
+                    const avgPowers = hourlyData.map(d => d.avg_power);
+                    
                     const ctx = document.getElementById('hourlyTrendsChart').getContext('2d');
                     if (hourlyChart) hourlyChart.destroy();
                     
                     hourlyChart = new Chart(ctx, {
                         type: 'bar',
                         data: {
-                            labels: Array.from({length: 24}, (_, i) => i + ':00'),
+                            labels: hours,
                             datasets: [{
-                                label: 'Power (W)',
-                                data: Array.from({length: 24}, () => Math.random() * 3000 + 1000),
+                                label: 'Average Power (W)',
+                                data: avgPowers,
                                 backgroundColor: 'rgba(102, 126, 234, 0.8)',
                                 borderColor: '#667eea',
                                 borderWidth: 2
@@ -1001,7 +1012,7 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
                 if (!r.ok) throw new Error(`HTTP ${r.status}`);
                 return r.json();
             })
-            .then(data => alert('✉️ ' + data.message))
+            .then(data => alert(data.message))
             .catch(e => handleError(e, 'testEmail'));
         }
 
@@ -1021,12 +1032,20 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
                 if (!r.ok) throw new Error(`HTTP ${r.status}`);
                 return r.json();
             })
-            .then(data => alert('📱 ' + data.message))
+            .then(data => alert(data.message))
             .catch(e => handleError(e, 'testSMS'));
         }
 
+        // FIXED: Properly handle contact ID - validate before creating rule
         function createAlertRule() {
-            const contactId = localStorage.getItem('contactId') || 1;
+            const contactIdStr = localStorage.getItem('contactId');
+            
+            if (!contactIdStr) {
+                alert('❌ Please register a contact first!');
+                return;
+            }
+            
+            const contactId = parseInt(contactIdStr);
             const name = document.getElementById('rule-name').value;
             const type = document.getElementById('rule-type').value;
             const threshold = parseFloat(document.getElementById('rule-threshold').value);
@@ -1044,7 +1063,7 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
                     alert_type: type,
                     threshold: threshold,
                     is_active: true,
-                    contact: parseInt(contactId)
+                    contact: contactId
                 })
             })
             .then(r => {
@@ -1054,9 +1073,9 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
             .then(data => {
                 if (data.success) {
                     alert('✅ Alert rule created!');
+                    getAlertRules();
                     document.getElementById('rule-name').value = '';
                     document.getElementById('rule-threshold').value = '';
-                    getAlertRules();
                 } else {
                     alert('❌ Error: ' + JSON.stringify(data.errors || data.error));
                 }
@@ -1072,20 +1091,14 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
                 })
                 .then(data => {
                     const rulesHtml = data.data.map(rule => 
-                        `<div class="stats-box">
-                            <div class="metric">
-                                <span class="metric-label">${rule.name}</span>
-                                <span class="metric-value">${rule.alert_type}</span>
-                            </div>
-                            <div class="metric">
-                                <span class="metric-label">Threshold:</span>
-                                <span class="metric-value">${rule.threshold}</span>
-                            </div>
+                        `<div class="metric">
+                            <span class="metric-label">${rule.name}:</span>
+                            <span class="metric-value">${rule.alert_type} - Threshold: ${rule.threshold}</span>
                         </div>`
-                    ).join('') || '<p style="color: #aaa;">No rules configured yet</p>';
+                    ).join('') || '<p>No rules configured</p>';
                     document.getElementById('alert-rules-list').innerHTML = rulesHtml;
                 })
-                .catch(e => console.error('Error:', e));
+                .catch(e => console.error(e));
         }
 
         // ===== RENEWABLE FUNCTIONS =====
@@ -1096,7 +1109,7 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
             const location = document.getElementById('renewable-location').value;
 
             if (!name || !capacity) {
-                alert('❌ Please fill required fields');
+                alert('❌ Please fill all required fields');
                 return;
             }
 
@@ -1118,12 +1131,12 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
             .then(data => {
                 if (data.success) {
                     alert('✅ Renewable source added!');
+                    getRenewableSources();
                     document.getElementById('renewable-name').value = '';
                     document.getElementById('renewable-capacity').value = '';
                     document.getElementById('renewable-location').value = '';
-                    getRenewableSources();
                 } else {
-                    alert('❌ Error: ' + JSON.stringify(data.errors || data.error));
+                    alert('❌ Error: ' + JSON.stringify(data.errors));
                 }
             })
             .catch(e => handleError(e, 'addRenewableSource'));
@@ -1137,29 +1150,19 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
                 })
                 .then(data => {
                     const sourcesHtml = data.data.map(source => 
-                        `<div class="stats-box">
-                            <div class="metric">
-                                <span class="metric-label">${source.name}</span>
-                                <span class="metric-value">${source.source_type}</span>
-                            </div>
-                            <div class="metric">
-                                <span class="metric-label">Capacity:</span>
-                                <span class="metric-value">${source.capacity}kW</span>
-                            </div>
-                            <div class="metric">
-                                <span class="metric-label">Location:</span>
-                                <span class="metric-value">${source.location}</span>
-                            </div>
+                        `<div class="metric">
+                            <span class="metric-label">${source.name}:</span>
+                            <span class="metric-value">${source.source_type} - ${source.capacity}kW (${source.location})</span>
                         </div>`
-                    ).join('') || '<p style="color: #aaa;">No sources added yet</p>';
+                    ).join('') || '<p>No renewable sources</p>';
                     document.getElementById('renewable-sources-list').innerHTML = sourcesHtml;
 
-                    const selectHtml = data.data.length > 0 ? data.data.map(source => 
+                    const selectHtml = data.data.map(source => 
                         `<option value="${source.id}">${source.name}</option>`
-                    ).join('') : '<option value="">No sources available</option>';
+                    ).join('');
                     document.getElementById('renewable-source-id').innerHTML = selectHtml;
                 })
-                .catch(e => console.error('Error:', e));
+                .catch(e => console.error(e));
         }
 
         function recordRenewableData() {
@@ -1168,7 +1171,7 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
             const efficiency = parseFloat(document.getElementById('renewable-efficiency').value);
 
             if (!sourceId || !power) {
-                alert('❌ Please fill all fields');
+                alert('❌ Please select source and enter power');
                 return;
             }
 
@@ -1191,7 +1194,7 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
                     document.getElementById('renewable-power').value = '';
                     document.getElementById('renewable-efficiency').value = '';
                 } else {
-                    alert('❌ Error: ' + JSON.stringify(data.errors || data.error));
+                    alert('❌ Error: ' + JSON.stringify(data.errors));
                 }
             })
             .catch(e => handleError(e, 'recordRenewableData'));
@@ -1204,29 +1207,31 @@ const API_BASE = 'http://localhost:8000/api';<!DOCTYPE html>
                     return r.json();
                 })
                 .then(data => {
-                    if (data.success) {
-                        const statsHtml = `
-                            <div class="metric">
-                                <span class="metric-label">Total Carbon Saved:</span>
-                                <span class="metric-value">${data.totals.carbon_saved_kg.toFixed(2)} kg CO₂</span>
-                            </div>
-                            <div class="metric">
-                                <span class="metric-label">Cost Saved:</span>
-                                <span class="metric-value">$${data.totals.cost_saved.toFixed(2)}</span>
-                            </div>
-                            <div class="metric">
-                                <span class="metric-label">Renewable Energy:</span>
-                                <span class="metric-value">${data.totals.renewable_energy_kwh.toFixed(2)} kWh</span>
-                            </div>
-                        `;
-                        document.getElementById('carbon-stats').innerHTML = statsHtml;
-                    }
+                    const statsHtml = `
+                        <div class="metric">
+                            <span class="metric-label">Total Carbon Saved:</span>
+                            <span class="metric-value">${data.totals.carbon_saved_kg.toFixed(2)} kg CO₂</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Cost Saved:</span>
+                            <span class="metric-value">$${data.totals.cost_saved.toFixed(2)}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Renewable Energy:</span>
+                            <span class="metric-value">${data.totals.renewable_energy_kwh.toFixed(2)} kWh</span>
+                        </div>
+                    `;
+                    document.getElementById('carbon-stats').innerHTML = statsHtml;
                 })
-                .catch(e => console.error('Error:', e));
+                .catch(e => console.error(e));
         }
 
-        // Load initial data
-        refreshDashboard();
+        // Initialize on load
+        window.addEventListener('load', () => {
+            refreshDashboard();
+            getRenewableSources();
+            getAlertRules();
+        });
     </script>
 </body>
 </html>
