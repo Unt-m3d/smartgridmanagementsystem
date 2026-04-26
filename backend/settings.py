@@ -12,10 +12,10 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-dev-key-change-in-production')
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-# ✅ UPDATED: Allow all hosts for mobile access
-ALLOWED_HOSTS = ['*']  # or use: ['localhost', '127.0.0.1', '192.168.1.100']
+# ✅ MOBILE & WEB ACCESS - Allow all hosts
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -39,7 +39,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # For static files
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -107,12 +107,13 @@ STATICFILES_DIRS = [
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# ✅ UPDATED CORS: Allow all origins for mobile access
+# ✅ CORS: Enable mobile access from any device on network
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
+    "http://127.0.0.1:3000",
 ]
 CORS_ALLOW_CREDENTIALS = True
 
@@ -128,7 +129,7 @@ REST_FRAMEWORK = {
     ],
 }
 
-# Alert Settings
+# ✅ ALERT THRESHOLDS
 ALERT_SETTINGS = {
     'HIGH_VOLTAGE': 240,
     'LOW_VOLTAGE': 190,
@@ -136,23 +137,24 @@ ALERT_SETTINGS = {
     'HIGH_POWER': 400,
 }
 
-# Email Configuration
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# ✅ EMAIL CONFIGURATION - Gmail or SendGrid
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@smartgrid.com')
 
-# SMS/Email Settings (Twilio & SendGrid)
+# ✅ SMS CONFIGURATION - Twilio
 TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
 TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')
 TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER', '')
 
+# ✅ SENDGRID Configuration (Optional)
 SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@smartgrid.com')
 
-# Celery Configuration
+# ✅ CELERY Configuration - Async Tasks for Alerts & Emails
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
 CELERY_ACCEPT_CONTENT = ['json']
@@ -160,13 +162,13 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 CELERY_TASK_TRACK_STARTED = True
-CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
+CELERY_TASK_TIME_LIMIT = 30 * 60
 
 # ML Models Path
 ML_MODELS_PATH = BASE_DIR / 'ml_models'
 os.makedirs(ML_MODELS_PATH, exist_ok=True)
 
-# Logging Configuration
+# ✅ LOGGING Configuration
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

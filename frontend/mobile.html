@@ -2,820 +2,400 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>⚡ Smart Grid Mobile</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Grid - Mobile App</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            user-select: none;
         }
-
-        html, body {
-            height: 100%;
-            width: 100%;
-            overflow-x: hidden;
-        }
-
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #fff;
-            font-size: 16px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
         }
-
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+        
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header h1 {
-            font-size: 1.5em;
-            margin-bottom: 5px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .header p {
-            font-size: 0.85em;
-            opacity: 0.9;
-        }
-
-        .real-time-clock {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: #00d4ff;
-            margin-top: 8px;
-            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
-            letter-spacing: 2px;
-        }
-
-        .status-indicator {
-            font-size: 0.8em;
-            margin-top: 8px;
-            padding: 6px 12px;
-            border-radius: 20px;
-            display: inline-block;
-            font-weight: bold;
-        }
-
-        .status-online {
-            background: rgba(16, 185, 129, 0.3);
-            color: #10b981;
-            border: 1px solid #10b981;
-        }
-
-        .status-offline {
-            background: rgba(239, 68, 68, 0.3);
-            color: #ef4444;
-            border: 1px solid #ef4444;
-        }
-
-        .nav-tabs {
-            display: flex;
-            justify-content: space-around;
-            gap: 5px;
-            padding: 10px;
-            background: rgba(0,0,0,0.3);
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .nav-tabs button {
-            padding: 10px 12px;
-            border: none;
-            border-radius: 6px;
-            background: rgba(255,255,255,0.1);
             color: white;
-            cursor: pointer;
-            font-size: 0.85em;
-            font-weight: 600;
-            transition: all 0.3s;
-            white-space: nowrap;
-            flex-shrink: 0;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
         }
-
-        .nav-tabs button:active {
-            background: rgba(102, 126, 234, 0.5);
-            transform: scale(0.95);
+        
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
         }
-
-        .nav-tabs button.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: 2px solid #fff;
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-top: 10px;
         }
-
-        .container {
-            max-width: 100%;
-            margin: 0;
-            padding: 12px;
-            padding-bottom: 80px;
+        
+        .status-online {
+            background: #10b981;
+            color: white;
         }
-
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.3s;
+        
+        .status-offline {
+            background: #ef4444;
+            color: white;
         }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
+        
         .card {
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
+            background: white;
             padding: 15px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-            transition: all 0.3s;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-
-        .card:active {
-            background: rgba(255,255,255,0.08);
-            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.2);
-        }
-
+        
         .card h2 {
-            color: #667eea;
-            margin-bottom: 12px;
             font-size: 1.2em;
+            color: #667eea;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-
+        
         .metric {
             display: flex;
             justify-content: space-between;
             padding: 10px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            align-items: center;
+            border-bottom: 1px solid #eee;
         }
-
-        .metric:last-child {
-            border-bottom: none;
-        }
-
+        
         .metric-label {
-            color: #aaa;
             font-weight: 600;
-            font-size: 0.9em;
+            color: #666;
         }
-
+        
         .metric-value {
-            color: #00d4ff;
+            color: #667eea;
             font-weight: bold;
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 8px;
             font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
         }
-
-        .chart-container {
-            position: relative;
-            height: 250px;
-            margin: 15px 0;
-        }
-
-        button {
+        
+        .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9em;
+        }
+        
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .input-group {
+            margin: 10px 0;
+        }
+        
+        .input-group label {
+            display: block;
             font-weight: 600;
-            margin: 6px 6px 6px 0;
-            transition: all 0.2s;
-            touch-action: manipulation;
+            margin-bottom: 5px;
+            color: #666;
         }
-
-        button:active {
-            transform: scale(0.95);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        input, select {
+        
+        .input-group input,
+        .input-group select {
             width: 100%;
             padding: 10px;
-            margin: 8px 0;
-            border: 1px solid rgba(102, 126, 234, 0.3);
+            border: 1px solid #ddd;
             border-radius: 6px;
-            background: rgba(255,255,255,0.05);
-            color: white;
             font-size: 1em;
         }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: #667eea;
-            background: rgba(102, 126, 234, 0.1);
+        
+        .alert-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin: 5px 0;
         }
-
-        label {
-            display: block;
-            margin-top: 10px;
-            margin-bottom: 5px;
-            color: #aaa;
-            font-weight: 600;
-            font-size: 0.9em;
+        
+        .alert-high {
+            background: #fee;
+            color: #c33;
         }
-
-        .stats-box {
-            background: rgba(102, 126, 234, 0.1);
-            border: 1px solid rgba(102, 126, 234, 0.3);
-            border-radius: 6px;
-            padding: 12px;
-            margin: 12px 0;
+        
+        .alert-medium {
+            background: #fef3cd;
+            color: #856404;
         }
-
-        .live-graph-container {
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 15px;
-            margin-top: 12px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-        }
-
-        .live-graph-container h2 {
-            color: #667eea;
-            margin-bottom: 15px;
-            font-size: 1.1em;
-        }
-
-        .live-chart-container {
-            position: relative;
-            height: 250px;
-            margin: 15px 0;
-        }
-
-        .no-data-message {
+        
+        .loading {
             text-align: center;
-            color: #ef4444;
-            padding: 30px;
-            font-size: 1em;
-            font-weight: bold;
+            padding: 20px;
+            color: #667eea;
         }
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: space-around;
-            padding: 8px 0;
-            backdrop-filter: blur(10px);
-            border-top: 1px solid rgba(255,255,255,0.1);
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
         }
-
-        .bottom-nav button {
-            flex: 1;
-            margin: 0;
-            padding: 8px 4px;
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .notification-count {
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            padding: 5px 10px;
             font-size: 0.8em;
-            border-radius: 0;
-        }
-
-        .bottom-nav button.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        @media (min-width: 768px) {
-            .grid {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .container {
-                padding: 20px;
-                padding-bottom: 100px;
-            }
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>⚡ Smart Grid</h1>
-        <p>Mobile Dashboard</p>
-        <div class="real-time-clock" id="realtimeClock">--:--:--</div>
-        <div class="status-indicator" id="statusIndicator">🔌 Checking...</div>
-    </div>
-
     <div class="container">
-        <!-- ===== DASHBOARD TAB ===== -->
-        <div id="dashboard" class="tab-content active">
-            <div class="grid">
-                <div class="card">
-                    <h2>⚡ Real-Time</h2>
-                    <div class="metric">
-                        <span class="metric-label">Power:</span>
-                        <span class="metric-value" id="current-power">-- W</span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">Voltage:</span>
-                        <span class="metric-value" id="current-voltage">-- V</span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">Current:</span>
-                        <span class="metric-value" id="current-current">-- A</span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">Status:</span>
-                        <span class="metric-value" id="device-status">--</span>
-                    </div>
-                    <button onclick="refreshDashboard()" style="width: 100%; margin-top: 12px;">🔄 Refresh</button>
-                </div>
-
-                <div class="card">
-                    <h2>📊 Stats</h2>
-                    <div class="metric">
-                        <span class="metric-label">Avg Power:</span>
-                        <span class="metric-value" id="stat-avg">-- W</span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">Peak Power:</span>
-                        <span class="metric-value" id="stat-peak">-- W</span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">Data Points:</span>
-                        <span class="metric-value" id="stat-points">--</span>
-                    </div>
-                    <button onclick="getStatistics()" style="width: 100%; margin-top: 12px;">Load Stats</button>
-                </div>
-            </div>
-
-            <!-- Live Graph -->
-            <div class="live-graph-container">
-                <h2>📊 Real-Time Graph</h2>
-                <div id="liveGraphMessage">
-                    <canvas id="liveChart" style="display:none;"></canvas>
-                    <div class="no-data-message" id="noDataMessage" style="display:none;">⚠️ Server Offline</div>
-                </div>
-            </div>
+        <!-- Header -->
+        <div class="header">
+            <h1>⚡ Smart Grid</h1>
+            <p>Mobile Monitoring</p>
+            <div class="status-badge" id="statusBadge">🔌 Checking...</div>
         </div>
-
-        <!-- ===== GRAPHS TAB ===== -->
-        <div id="graphs" class="tab-content">
-            <div class="card">
-                <h2>📈 Daily Trends</h2>
-                <div class="chart-container">
-                    <canvas id="dailyTrendsChart"></canvas>
-                </div>
-                <button onclick="loadDailyTrends()" style="width: 100%;">📊 Load</button>
-                <button onclick="calculateTrends()" style="width: 100%;">🔢 Calculate</button>
-            </div>
-
-            <div class="card">
-                <h2>⏰ Hourly Trends</h2>
-                <div class="chart-container">
-                    <canvas id="hourlyTrendsChart"></canvas>
-                </div>
-                <button onclick="loadHourlyTrends()" style="width: 100%;">📊 Load</button>
-            </div>
-        </div>
-
-        <!-- ===== ALERTS TAB ===== -->
-        <div id="alerts" class="tab-content">
-            <div class="card">
-                <h2>📝 Register</h2>
-                
-                <label>Email:</label>
-                <input type="email" id="alert-email" placeholder="email@example.com">
-                
-                <label>Phone:</label>
-                <input type="tel" id="alert-phone" placeholder="+1234567890">
-                
-                <button onclick="registerContact()" style="width: 100%; margin-top: 12px;">📝 Register</button>
-                <button onclick="testEmail()" style="width: 100%;">✉️ Test Email</button>
-                <button onclick="testSMS()" style="width: 100%;">📱 Test SMS</button>
-            </div>
-
-            <div class="card">
-                <h2>🔔 Rules</h2>
-                <div id="alert-rules-list"></div>
-                <button onclick="getAlertRules()" style="width: 100%;">🔄 Refresh</button>
-            </div>
-        </div>
-
-        <!-- ===== RENEWABLE TAB ===== -->
-        <div id="renewable" class="tab-content">
-            <div class="card">
-                <h2>☀️ Sources</h2>
-                <div id="renewable-sources-list"></div>
-                <button onclick="getRenewableSources()" style="width: 100%;">🔄 Refresh</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bottom Navigation -->
-    <div class="bottom-nav">
-        <button class="active" onclick="switchTab('dashboard')">📊 Home</button>
-        <button onclick="switchTab('graphs')">📈 Graphs</button>
-        <button onclick="switchTab('alerts')">🔔 Alerts</button>
-        <button onclick="switchTab('renewable')">☀️ Renewable</button>
-    </div>
-
-    <script>
-        // ✅ IMPORTANT: Update this with your computer's IP address
-        const API_BASE = window.location.origin + '/api';
         
-        let isServerOnline = false;
-        let liveChartUpdateInterval = null;
-        let liveChartInstance = null;
-
-        // ===== CHECK SERVER STATUS =====
-        function checkServerStatus() {
-            fetch(`${API_BASE}/data/all/?limit=1`)
+        <!-- Real-Time Status -->
+        <div class="card">
+            <h2>📊 Real-Time Status</h2>
+            <div class="metric">
+                <span class="metric-label">Voltage:</span>
+                <span class="metric-value" id="voltage">-- V</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Current:</span>
+                <span class="metric-value" id="current">-- A</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Power:</span>
+                <span class="metric-value" id="power">-- W</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Device:</span>
+                <span class="metric-value" id="deviceStatus">--</span>
+            </div>
+            <button class="btn btn-primary" onclick="refreshData()">🔄 Refresh</button>
+        </div>
+        
+        <!-- Device Control -->
+        <div class="card">
+            <h2>⚙️ Device Control</h2>
+            <button class="btn btn-success" onclick="turnOn()">✅ Turn ON</button>
+            <button class="btn btn-danger" onclick="turnOff()">❌ Turn OFF</button>
+        </div>
+        
+        <!-- Alerts -->
+        <div class="card">
+            <h2>🔔 Recent Alerts <span id="alertCount" class="notification-count" style="display:none;"></span></h2>
+            <div id="alertsList"></div>
+            <button class="btn btn-primary" onclick="loadAlerts()">📋 Load Alerts</button>
+        </div>
+        
+        <!-- Alert Configuration -->
+        <div class="card">
+            <h2>📧 Alert Settings</h2>
+            <div class="input-group">
+                <label>Email:</label>
+                <input type="email" id="userEmail" placeholder="your-email@gmail.com">
+            </div>
+            <div class="input-group">
+                <label>Phone (SMS):</label>
+                <input type="tel" id="userPhone" placeholder="+1234567890">
+            </div>
+            <button class="btn btn-primary" onclick="saveAlertSettings()">💾 Save Settings</button>
+            <button class="btn btn-primary" onclick="testEmail()">✉️ Test Email</button>
+            <button class="btn btn-primary" onclick="testSMS()">📱 Test SMS</button>
+        </div>
+        
+        <!-- Summary -->
+        <div class="card">
+            <h2>📈 Summary (7 Days)</h2>
+            <div class="metric">
+                <span class="metric-label">Avg Power:</span>
+                <span class="metric-value" id="avgPower">-- W</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Peak Power:</span>
+                <span class="metric-value" id="peakPower">-- W</span>
+            </div>
+            <button class="btn btn-primary" onclick="loadSummary()">📊 Load Summary</button>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = window.location.origin + '/api';
+        let isOnline = false;
+        
+        // Check server status
+        function checkStatus() {
+            fetch(`${API_BASE}/data/latest/`)
                 .then(r => {
-                    isServerOnline = r.ok;
-                    updateStatusIndicator();
+                    isOnline = r.ok;
+                    updateStatusBadge();
+                    if (isOnline) refreshData();
                 })
                 .catch(e => {
-                    isServerOnline = false;
-                    updateStatusIndicator();
+                    isOnline = false;
+                    updateStatusBadge();
                 });
         }
-
-        function updateStatusIndicator() {
-            const indicator = document.getElementById('statusIndicator');
-            if (isServerOnline) {
-                indicator.textContent = '🟢 Online';
-                indicator.className = 'status-indicator status-online';
+        
+        function updateStatusBadge() {
+            const badge = document.getElementById('statusBadge');
+            if (isOnline) {
+                badge.textContent = '🟢 Online';
+                badge.className = 'status-badge status-online';
             } else {
-                indicator.textContent = '🔴 Offline';
-                indicator.className = 'status-indicator status-offline';
+                badge.textContent = '🔴 Offline';
+                badge.className = 'status-badge status-offline';
             }
         }
-
-        setInterval(checkServerStatus, 3000);
-        checkServerStatus();
-
-        // ===== REAL-TIME CLOCK =====
-        function updateClock() {
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('realtimeClock').textContent = `${hours}:${minutes}:${seconds}`;
-        }
-
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        // ===== LIVE CHART =====
-        function initLiveChart() {
-            const ctx = document.getElementById('liveChart');
-            if (!ctx) return;
-            
-            if (liveChartInstance) liveChartInstance.destroy();
-            ctx.style.display = 'block';
-            
-            liveChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Power (W)',
-                        data: [],
-                        borderColor: '#00d4ff',
-                        backgroundColor: 'rgba(0, 212, 255, 0.1)',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        fill: true,
-                        pointRadius: 3,
-                        pointBackgroundColor: '#00d4ff',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: { duration: 0 },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: 'white',
-                                font: { size: 12, weight: 'bold' }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            ticks: { color: 'white', maxTicksLimit: 6 },
-                            grid: { color: 'rgba(255,255,255,0.1)' }
-                        },
-                        y: {
-                            ticks: { color: 'white' },
-                            grid: { color: 'rgba(255,255,255,0.1)' },
-                            min: 0,
-                            max: 5000
-                        }
-                    }
-                }
-            });
-        }
-
-        function startLiveChartUpdates() {
-            if (liveChartUpdateInterval) clearInterval(liveChartUpdateInterval);
-            
-            liveChartUpdateInterval = setInterval(() => {
-                if (!isServerOnline) {
-                    stopLiveChartUpdates();
-                    return;
-                }
-
-                fetch(`${API_BASE}/data/all/?limit=1`)
-                    .then(r => {
-                        if (!r.ok) throw new Error('Server error');
-                        return r.json();
-                    })
-                    .then(data => {
-                        if (!liveChartInstance) initLiveChart();
-                        
-                        if (data && data.length > 0) {
-                            const latest = data[0];
-                            const power = latest.power || 0;
-                            const timestamp = new Date().toLocaleTimeString();
-
-                            if (liveChartInstance.data.labels.length >= 30) {
-                                liveChartInstance.data.labels.shift();
-                                liveChartInstance.data.datasets[0].data.shift();
-                            }
-
-                            liveChartInstance.data.labels.push(timestamp);
-                            liveChartInstance.data.datasets[0].data.push(power);
-                            liveChartInstance.update();
-
-                            document.getElementById('liveChart').style.display = 'block';
-                            document.getElementById('noDataMessage').style.display = 'none';
-                        }
-                    })
-                    .catch(e => {
-                        console.log('Live chart error:', e);
-                        stopLiveChartUpdates();
-                    });
-            }, 1000);
-        }
-
-        function stopLiveChartUpdates() {
-            if (liveChartUpdateInterval) {
-                clearInterval(liveChartUpdateInterval);
-                liveChartUpdateInterval = null;
-            }
-            
-            document.getElementById('liveChart').style.display = 'none';
-            document.getElementById('noDataMessage').style.display = 'block';
-        }
-
-        // ===== TAB SWITCHING =====
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.bottom-nav button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-
-            if (tabName === 'dashboard') {
-                setTimeout(() => {
-                    if (!liveChartInstance) initLiveChart();
-                    if (isServerOnline) {
-                        startLiveChartUpdates();
-                    } else {
-                        stopLiveChartUpdates();
-                    }
-                }, 100);
-            } else {
-                stopLiveChartUpdates();
-            }
-        }
-
-        // ===== ERROR HANDLER =====
-        function handleError(error, context) {
-            console.error(`Error in ${context}:`, error);
-            alert(`❌ Error: ${error.message || error}`);
-        }
-
-        // ===== DASHBOARD FUNCTIONS =====
-        function refreshDashboard() {
-            fetch(`${API_BASE}/data/all/?limit=1`)
-                .then(r => {
-                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                    return r.json();
-                })
+        
+        // Real-time data
+        function refreshData() {
+            fetch(`${API_BASE}/data/latest/`)
+                .then(r => r.json())
                 .then(data => {
-                    if (data.length > 0) {
-                        const latest = data[0];
-                        document.getElementById('current-power').textContent = latest.power.toFixed(2) + ' W';
-                        document.getElementById('current-voltage').textContent = latest.voltage.toFixed(2) + ' V';
-                        document.getElementById('current-current').textContent = latest.current.toFixed(2) + ' A';
+                    if (data.data) {
+                        const d = data.data;
+                        document.getElementById('voltage').textContent = (d.voltage || 0).toFixed(2) + ' V';
+                        document.getElementById('current').textContent = (d.current || 0).toFixed(2) + ' A';
+                        document.getElementById('power').textContent = (d.power || 0).toFixed(2) + ' W';
                     }
                 })
-                .catch(e => handleError(e, 'refreshDashboard'));
-
+                .catch(e => console.error(e));
+            
             fetch(`${API_BASE}/device/status/`)
-                .then(r => {
-                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                    return r.json();
-                })
+                .then(r => r.json())
                 .then(data => {
-                    document.getElementById('device-status').textContent = data.status;
+                    document.getElementById('deviceStatus').textContent = data.status || '--';
                 })
-                .catch(e => console.log('Status not available'));
+                .catch(e => console.error(e));
         }
-
-        function getStatistics() {
-            fetch(`${API_BASE}/summary/`)
-                .then(r => {
-                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                    return r.json();
-                })
+        
+        // Device control
+        function turnOn() {
+            fetch(`${API_BASE}/device/on/`, { method: 'POST' })
+                .then(r => r.json())
                 .then(data => {
-                    document.getElementById('stat-avg').textContent = data.average_power.toFixed(2) + ' W';
-                    document.getElementById('stat-peak').textContent = data.peak_power.toFixed(2) + ' W';
-                    document.getElementById('stat-points').textContent = data.records;
+                    alert('✅ Device turned ON');
+                    refreshData();
                 })
-                .catch(e => handleError(e, 'getStatistics'));
+                .catch(e => alert('❌ Error: ' + e));
         }
-
-        // ===== GRAPH FUNCTIONS =====
-        let dailyChart, hourlyChart;
-
-        function loadDailyTrends() {
-            fetch(`${API_BASE}/analytics/daily-trends/?days=30`)
-                .then(r => {
-                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                    return r.json();
-                })
+        
+        function turnOff() {
+            fetch(`${API_BASE}/device/off/`, { method: 'POST' })
+                .then(r => r.json())
                 .then(data => {
-                    const trendsData = data.data || data;
+                    alert('✅ Device turned OFF');
+                    refreshData();
+                })
+                .catch(e => alert('❌ Error: ' + e));
+        }
+        
+        // Alerts
+        function loadAlerts() {
+            fetch(`${API_BASE}/alerts/`)
+                .then(r => r.json())
+                .then(data => {
+                    const alerts = Array.isArray(data) ? data : [];
+                    const html = alerts.slice(0, 5).map(a => `
+                        <div class="alert-badge ${a.severity === 'HIGH' ? 'alert-high' : 'alert-medium'}">
+                            ${a.alert_type}: ${a.message}
+                        </div>
+                    `).join('') || '<p>No alerts</p>';
                     
-                    if (!trendsData || trendsData.length === 0) {
-                        alert('No data available');
-                        return;
+                    document.getElementById('alertsList').innerHTML = html;
+                    if (alerts.length > 0) {
+                        document.getElementById('alertCount').textContent = alerts.length;
+                        document.getElementById('alertCount').style.display = 'inline-block';
                     }
-                    
-                    const dates = trendsData.map(d => d.date || d.timestamp?.split('T')[0]);
-                    const avgPower = trendsData.map(d => d.avg_power || d.average_power);
-                    const peakPower = trendsData.map(d => d.peak_power);
-
-                    const ctx = document.getElementById('dailyTrendsChart').getContext('2d');
-                    if (dailyChart) dailyChart.destroy();
-                    
-                    dailyChart = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: dates,
-                            datasets: [
-                                {
-                                    label: 'Avg',
-                                    data: avgPower,
-                                    borderColor: '#667eea',
-                                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                                    tension: 0.4,
-                                    borderWidth: 2,
-                                    fill: true,
-                                    pointRadius: 2
-                                },
-                                {
-                                    label: 'Peak',
-                                    data: peakPower,
-                                    borderColor: '#ef4444',
-                                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                                    tension: 0.4,
-                                    borderWidth: 2,
-                                    fill: true,
-                                    pointRadius: 2
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    labels: { color: 'white', font: { size: 11 } }
-                                }
-                            },
-                            scales: {
-                                x: { ticks: { color: 'white', maxTicksLimit: 6 }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                                y: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }
-                            }
-                        }
-                    });
                 })
-                .catch(e => handleError(e, 'loadDailyTrends'));
+                .catch(e => console.error(e));
         }
-
-        function loadHourlyTrends() {
-            fetch(`${API_BASE}/analytics/hourly-trends/?hours=24`)
-                .then(r => {
-                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                    return r.json();
-                })
-                .then(data => {
-                    const ctx = document.getElementById('hourlyTrendsChart').getContext('2d');
-                    if (hourlyChart) hourlyChart.destroy();
-                    
-                    hourlyChart = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: Array.from({length: 24}, (_, i) => i + ':00'),
-                            datasets: [{
-                                label: 'Power (W)',
-                                data: Array.from({length: 24}, () => Math.random() * 3000 + 1000),
-                                backgroundColor: 'rgba(102, 126, 234, 0.8)',
-                                borderColor: '#667eea',
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: { legend: { labels: { color: 'white', font: { size: 11 } } } },
-                            scales: {
-                                x: { ticks: { color: 'white', maxTicksLimit: 12 }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                                y: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }
-                            }
-                        }
-                    });
-                })
-                .catch(e => handleError(e, 'loadHourlyTrends'));
-        }
-
-        function calculateTrends() {
-            fetch(`${API_BASE}/analytics/calculate-trends/`, { method: 'POST' })
-                .then(r => {
-                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                    return r.json();
-                })
-                .then(data => {
-                    alert('✅ Trends calculated!');
-                    loadDailyTrends();
-                })
-                .catch(e => handleError(e, 'calculateTrends'));
-        }
-
-        // ===== ALERT FUNCTIONS =====
-        function registerContact() {
-            const email = document.getElementById('alert-email').value;
-            const phone = document.getElementById('alert-phone').value;
-
+        
+        // Alert settings
+        function saveAlertSettings() {
+            const email = document.getElementById('userEmail').value;
+            const phone = document.getElementById('userPhone').value;
+            
             if (!email) {
                 alert('❌ Email required');
                 return;
             }
-
+            
             fetch(`${API_BASE}/notifications/register-contact/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     user_email: email,
-                    user_phone: phone || ''
+                    user_phone: phone,
+                    receive_email_alerts: true,
+                    receive_sms_alerts: !!phone
                 })
             })
-            .then(r => {
-                if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                return r.json();
-            })
+            .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    alert('✅ Contact registered!');
-                    localStorage.setItem('contactId', data.data.id);
+                    alert('✅ Settings saved!');
+                    localStorage.setItem('userEmail', email);
+                    localStorage.setItem('userPhone', phone);
                 } else {
-                    alert('❌ Error');
+                    alert('❌ Error: ' + (data.error || 'Unknown'));
                 }
             })
-            .catch(e => handleError(e, 'registerContact'));
+            .catch(e => alert('❌ Error: ' + e));
         }
-
+        
         function testEmail() {
-            const email = document.getElementById('alert-email').value;
+            const email = document.getElementById('userEmail').value;
             if (!email) {
-                alert('❌ Enter email');
+                alert('❌ Enter email first');
                 return;
             }
             
@@ -824,18 +404,15 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: email })
             })
-            .then(r => {
-                if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                return r.json();
-            })
-            .then(data => alert('✉️ ' + data.message))
-            .catch(e => handleError(e, 'testEmail'));
+            .then(r => r.json())
+            .then(data => alert('✅ ' + data.message))
+            .catch(e => alert('❌ Error: ' + e));
         }
-
+        
         function testSMS() {
-            const phone = document.getElementById('alert-phone').value;
+            const phone = document.getElementById('userPhone').value;
             if (!phone) {
-                alert('❌ Enter phone');
+                alert('❌ Enter phone first');
                 return;
             }
             
@@ -844,65 +421,29 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ phone: phone })
             })
-            .then(r => {
-                if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                return r.json();
-            })
-            .then(data => alert('📱 ' + data.message))
-            .catch(e => handleError(e, 'testSMS'));
+            .then(r => r.json())
+            .then(data => alert('✅ ' + data.message))
+            .catch(e => alert('❌ Error: ' + e));
         }
-
-        function getAlertRules() {
-            fetch(`${API_BASE}/notifications/get-rules/`)
-                .then(r => {
-                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                    return r.json();
-                })
+        
+        // Summary
+        function loadSummary() {
+            fetch(`${API_BASE}/summary/?days=7`)
+                .then(r => r.json())
                 .then(data => {
-                    const rulesHtml = data.data.map(rule => 
-                        `<div class="stats-box">
-                            <div class="metric">
-                                <span class="metric-label">${rule.name}</span>
-                                <span class="metric-value">${rule.alert_type}</span>
-                            </div>
-                            <div class="metric">
-                                <span class="metric-label">Threshold:</span>
-                                <span class="metric-value">${rule.threshold}</span>
-                            </div>
-                        </div>`
-                    ).join('') || '<p style="color: #aaa;">No rules</p>';
-                    document.getElementById('alert-rules-list').innerHTML = rulesHtml;
+                    document.getElementById('avgPower').textContent = (data.average_power || 0).toFixed(2) + ' W';
+                    document.getElementById('peakPower').textContent = (data.peak_power || 0).toFixed(2) + ' W';
                 })
-                .catch(e => console.error('Error:', e));
+                .catch(e => console.error(e));
         }
-
-        // ===== RENEWABLE FUNCTIONS =====
-        function getRenewableSources() {
-            fetch(`${API_BASE}/renewable/sources/`)
-                .then(r => {
-                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                    return r.json();
-                })
-                .then(data => {
-                    const sourcesHtml = data.data.map(source => 
-                        `<div class="stats-box">
-                            <div class="metric">
-                                <span class="metric-label">${source.name}</span>
-                                <span class="metric-value">${source.source_type}</span>
-                            </div>
-                            <div class="metric">
-                                <span class="metric-label">Capacity:</span>
-                                <span class="metric-value">${source.capacity}kW</span>
-                            </div>
-                        </div>`
-                    ).join('') || '<p style="color: #aaa;">No sources</p>';
-                    document.getElementById('renewable-sources-list').innerHTML = sourcesHtml;
-                })
-                .catch(e => console.error('Error:', e));
-        }
-
+        
         // Initialize
-        refreshDashboard();
+        window.addEventListener('load', () => {
+            checkStatus();
+            loadAlerts();
+            setInterval(checkStatus, 5000); // Check every 5 seconds
+            setInterval(refreshData, 3000); // Refresh data every 3 seconds
+        });
     </script>
 </body>
 </html>
