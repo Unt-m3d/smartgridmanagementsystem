@@ -22,7 +22,7 @@ class EnergySimulator:
             self.running = True
             self.thread = threading.Thread(target=self._run, daemon=True)
             self.thread.start()
-            logger.info("⚡ Energy simulator started (1 second interval)")
+            logger.info("Energy simulator started (1 second interval)")
     
     def stop(self):
         """Stop the simulator"""

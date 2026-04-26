@@ -13,6 +13,6 @@ class EnergyConfig(AppConfig):
         try:
             from .simulator import start_simulator
             start_simulator()
-            logger.info("✅ Energy simulator auto-started")
+            logger.info("Energy simulator auto-started")
         except Exception as e:
-            logger.warning(f"⚠️ Could not start simulator: {str(e)}")
+            logger.warning(f"Could not start simulator: {str(e)}")
