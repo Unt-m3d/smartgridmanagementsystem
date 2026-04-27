@@ -136,7 +136,7 @@ This system was developed to:
 | API Framework        | Django REST Framework |
 | Task Queue           | Celery                |
 | Scheduler            | Celery Beat           |
-| Messaging/Alerts     | Twilio                |
+| Messaging/Alerts     | Twilio,emails         |
 | Testing Tool         | Postman               |
 | Database             | SQLite / PostgreSQL   |
 | Cache & Broker       | Redis                 |
