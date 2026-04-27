@@ -9,6 +9,9 @@ app = Celery('backend')
 # Load configuration from Django settings
 app.config_from_object('django.conf:settings', namespace='CELERY')
 
+# ✅ Use solo pool for Windows compatibility
+app.conf.worker_pool = 'solo'
+
 # Auto-discover tasks from all registered Django apps
 app.autodiscover_tasks()
 
@@ -16,15 +19,15 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     'predict-energy-every-hour': {
         'task': 'energy.tasks.predict_future_energy',
-        'schedule': crontab(minute=0),  # Run at minute 0 of every hour
+        'schedule': crontab(minute=0),
     },
     'check-anomalies-every-5-min': {
         'task': 'energy.tasks.check_energy_anomalies',
-        'schedule': crontab(minute='*/5'),  # Run every 5 minutes
+        'schedule': crontab(minute='*/5'),
     },
     'calculate-trends-daily': {
         'task': 'analytics.tasks.calculate_energy_trends',
-        'schedule': crontab(hour=0, minute=0),  # Run daily at midnight
+        'schedule': crontab(hour=0, minute=0),
     },
 }
 
