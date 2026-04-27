@@ -322,25 +322,42 @@ python manage.py createsuperuser
 Open 4 terminals:
 
 **Terminal 1**
-
+Runs Redis
+Acts as a message broker
+Stores tasks sent by your app temporarily
+Workers (Celery) pull jobs from here
+* Think of it as the middleman / queue
 ```bash
 redis-server
 ```
 
 **Terminal 2**
-
+Starts a Celery worker
+Uses Celery
+Picks tasks from Redis and executes them
+Handles background jobs (emails and AI predictions.)
+*This is the worker doing the actual job
 ```bash
 celery -A backend worker -l info
 ```
 
 **Terminal 3**
+Runs Celery Beat (scheduler)
+Sends scheduled tasks to Redis at specific times
+Example: run a job every minute/hour/day
+
+*This is the timer / scheduler
 
 ```bash
 celery -A backend beat -l info
 ```
 
 **Terminal 4**
+Runs your Django backend server
+Handles HTTP requests (frontend ↔ backend)
+Sends tasks to Celery when needed
 
+*This is the main application server
 ```bash
 python manage.py runserver
 ```
