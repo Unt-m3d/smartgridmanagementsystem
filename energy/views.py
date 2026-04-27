@@ -10,6 +10,12 @@ from .tasks import predict_future_energy, send_alert_notifications, check_energy
 from .analytics import get_energy_summary
 import logging
 from datetime import timedelta
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+@api_view(['GET'])
+def data_view(request):
+    return Response({"message": "Energy data endpoint working"})
 
 logger = logging.getLogger(__name__)
 

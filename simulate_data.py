@@ -11,8 +11,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Your Django API endpoint
-URL = "http://127.0.0.1:8000/api/data/"
+# ✅ CORRECTED: Changed from /api/data/ to /api/data/post/
+URL = "http://127.0.0.1:8000/api/data/post/"
 MAX_RETRIES = 3
 RETRY_DELAY = 10
 

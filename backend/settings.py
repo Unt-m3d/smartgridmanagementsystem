@@ -5,6 +5,7 @@ Django settings for backend project.
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from celery.schedules import crontab
 
 # Load environment variables
 load_dotenv()
@@ -163,6 +164,22 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
+
+# ✅ CELERY BEAT - Periodic Tasks Schedule (AI PREDICTIONS)
+CELERY_BEAT_SCHEDULE = {
+    'predict-energy-every-hour': {
+        'task': 'energy.tasks.predict_future_energy',
+        'schedule': crontab(minute=0),  # Run at minute 0 of every hour
+    },
+    'check-anomalies-every-5-min': {
+        'task': 'energy.tasks.check_energy_anomalies',
+        'schedule': crontab(minute='*/5'),  # Run every 5 minutes
+    },
+    'calculate-trends-daily': {
+        'task': 'analytics.tasks.calculate_energy_trends',
+        'schedule': crontab(hour=0, minute=0),  # Run daily at midnight
+    },
+}
 
 # ML Models Path
 ML_MODELS_PATH = BASE_DIR / 'ml_models'

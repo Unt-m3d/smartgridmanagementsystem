@@ -26,7 +26,7 @@ def send_email_alert(self, email, subject, message, html_message=None):
     Supports: Gmail (SMTP) or SendGrid
     """
     try:
-        logger.info(f"Sending email to {email}: {subject}")
+        logger.info(f"Sending email to {email}: {subject.encode('utf-8', errors='ignore').decode()}")
         
         sendgrid_api_key = getattr(settings, 'SENDGRID_API_KEY', None)
         

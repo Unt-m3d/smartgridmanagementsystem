@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = "http://127.0.0.1:8000"
 STATUS_ENDPOINT = f"{BASE_URL}/api/device/status/"
-DATA_ENDPOINT = f"{BASE_URL}/api/data/"
+# ✅ CORRECTED: Changed from /api/data/ to /api/data/post/
+DATA_ENDPOINT = f"{BASE_URL}/api/data/post/"
 
 
 def get_device_status():

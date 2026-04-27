@@ -5,6 +5,12 @@ from renewable import views as renewable_views
 from notifications import views as notification_views
 
 urlpatterns = [
+    # ✅ LEGACY ENDPOINTS (for backward compatibility with frontend & simulators)
+    path('data/', energy_views.get_data, name='data-all-legacy'),
+    path('status/', energy_views.get_status, name='status-legacy'),
+    path('turn-on/', energy_views.turn_on, name='turn-on-legacy'),
+    path('turn-off/', energy_views.turn_off, name='turn-off-legacy'),
+    
     # Real-time Data
     path('data/latest/', energy_views.get_latest_data, name='latest-data'),
     path('data/all/', energy_views.get_data, name='get-data'),
