@@ -18,13 +18,13 @@ def add_renewable_source(request):
         serializer = RenewableSourceSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            logger.info(f"✅ Renewable source created: {serializer.data}")
+            logger.info(f"Renewable source created: {serializer.data}")
             return Response({'success': True, 'data': serializer.data}, status=status.HTTP_201_CREATED)
         
-        logger.error(f"❌ Validation error: {serializer.errors}")
+        logger.error(f"Validation error: {serializer.errors}")
         return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        logger.error(f"❌ Error adding renewable source: {str(e)}")
+        logger.error(f"Error adding renewable source: {str(e)}")
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
@@ -33,10 +33,10 @@ def get_renewable_sources(request):
     try:
         sources = RenewableSource.objects.all()
         serializer = RenewableSourceSerializer(sources, many=True)
-        logger.info(f"✅ Retrieved {len(serializer.data)} renewable sources")
+        logger.info(f"Retrieved {len(serializer.data)} renewable sources")
         return Response({'success': True, 'data': serializer.data}, status=status.HTTP_200_OK)
     except Exception as e:
-        logger.error(f"❌ Error fetching renewable sources: {str(e)}")
+        logger.error(f"Error fetching renewable sources: {str(e)}")
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
@@ -47,13 +47,13 @@ def record_renewable_data(request):
         serializer = RenewableDataSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            logger.info(f"✅ Renewable data recorded: {serializer.data}")
+            logger.info(f"Renewable data recorded: {serializer.data}")
             return Response({'success': True, 'data': serializer.data}, status=status.HTTP_201_CREATED)
         
-        logger.error(f"❌ Validation error: {serializer.errors}")
+        logger.error(f"Validation error: {serializer.errors}")
         return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        logger.error(f"❌ Error recording renewable data: {str(e)}")
+        logger.error(f"Error recording renewable data: {str(e)}")
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
@@ -62,10 +62,10 @@ def get_renewable_generation(request):
     try:
         data = RenewableData.objects.all().order_by('-timestamp')[:100]
         serializer = RenewableDataSerializer(data, many=True)
-        logger.info(f"✅ Retrieved {len(serializer.data)} renewable generation records")
+        logger.info(f"Retrieved {len(serializer.data)} renewable generation records")
         return Response({'success': True, 'data': serializer.data}, status=status.HTTP_200_OK)
     except Exception as e:
-        logger.error(f"❌ Error fetching renewable generation: {str(e)}")
+        logger.error(f"Error fetching renewable generation: {str(e)}")
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
@@ -76,13 +76,13 @@ def record_carbon_savings(request):
         serializer = CarbonSavingsSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            logger.info(f"✅ Carbon savings recorded: {serializer.data}")
+            logger.info(f"Carbon savings recorded: {serializer.data}")
             return Response({'success': True, 'data': serializer.data}, status=status.HTTP_201_CREATED)
         
-        logger.error(f"❌ Validation error: {serializer.errors}")
+        logger.error(f"Validation error: {serializer.errors}")
         return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        logger.error(f"❌ Error recording carbon savings: {str(e)}")
+        logger.error(f"Error recording carbon savings: {str(e)}")
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
@@ -102,7 +102,7 @@ def get_carbon_savings(request):
             cost_saved=Sum('cost_saved')
         )
         
-        logger.info(f"✅ Retrieved {len(serializer.data)} carbon savings records")
+        logger.info(f"Retrieved {len(serializer.data)} carbon savings records")
         
         return Response({
             'success': True,
@@ -114,5 +114,31 @@ def get_carbon_savings(request):
             }
         }, status=status.HTTP_200_OK)
     except Exception as e:
-        logger.error(f" Error fetching carbon savings: {str(e)}")
+        logger.error(f"Error fetching carbon savings: {str(e)}")
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+def get_renewable_percentage(request):
+    """Get renewable energy percentage"""
+    try:
+        days = int(request.query_params.get('days', 30))
+        start_date = timezone.now() - timedelta(days=days)
+        
+        # Get renewable energy data
+        renewable_data = CarbonSavings.objects.filter(date__gte=start_date)
+        total_renewable_kwh = renewable_data.aggregate(Sum('renewable_energy_kwh'))['renewable_energy_kwh__sum'] or 0
+        
+        # Calculate percentage (assuming you have total energy somewhere)
+        # This is a basic example - adjust based on your data structure
+        renewable_percentage = total_renewable_kwh / (total_renewable_kwh + 1) * 100 if total_renewable_kwh > 0 else 0
+        
+        logger.info(f"Retrieved renewable percentage: {renewable_percentage}%")
+        
+        return Response({
+            'success': True,
+            'renewable_percentage': round(renewable_percentage, 2),
+            'renewable_energy_kwh': total_renewable_kwh
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Error fetching renewable percentage: {str(e)}")
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

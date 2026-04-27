@@ -8,4 +8,5 @@ urlpatterns = [
     path('generation/', views.get_renewable_generation, name='generation'),
     path('carbon-savings/', views.get_carbon_savings, name='carbon-savings'),
     path('record-carbon/', views.record_carbon_savings, name='record-carbon'),
+    path('renewable-percentage/', views.get_renewable_percentage, name='renewable-percentage'),
 ]
