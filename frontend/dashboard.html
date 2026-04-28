@@ -945,44 +945,144 @@
         // ===== RENEWABLE FUNCTIONS =====
         function addRenewableSource() {
             const name = document.getElementById('renewable-name').value;
-            if (!name) {
+            const type = document.getElementById('renewable-type').value;
+            const capacity = document.getElementById('renewable-capacity').value;
+            const location = document.getElementById('renewable-location').value;
+
+            if (!name || !type || !capacity || !location) {
                 alert('❌ Please fill all fields');
                 return;
             }
-            alert('✅ Renewable source added!');
-            document.getElementById('renewable-name').value = '';
+
+            // Send to API
+            fetch(API_BASE + '/renewable/add-source/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: name,
+                    source_type: type,
+                    capacity: parseFloat(capacity),
+                    location: location,
+                    is_active: true
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ Renewable source added!');
+                    document.getElementById('renewable-name').value = '';
+                    document.getElementById('renewable-capacity').value = '';
+                    document.getElementById('renewable-location').value = '';
+                    getRenewableSources();
+                } else {
+                    alert('❌ Error: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Error adding renewable source');
+            });
         }
 
         function getRenewableSources() {
-            const html = `
-                <div class="metric">
-                    <span class="metric-label">Solar Panel (Rooftop):</span>
-                    <span class="metric-value">10kW</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Wind Turbine (Hill):</span>
-                    <span class="metric-value">50kW</span>
-                </div>
-            `;
-            document.getElementById('renewable-sources-list').innerHTML = html;
+            fetch(API_BASE + '/renewable/sources/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data && data.data.length > 0) {
+                        // Display the list of renewable sources
+                        const html = data.data.map(source => `
+                            <div class="metric">
+                                <span class="metric-label">${source.name} (${source.source_type}):</span>
+                                <span class="metric-value">${source.capacity}kW</span>
+                            </div>
+                        `).join('');
+                        document.getElementById('renewable-sources-list').innerHTML = html;
+
+                        // Populate the dropdown for recording data
+                        const dropdown = document.getElementById('renewable-source-id');
+                        dropdown.innerHTML = '<option value="">-- Select a Source --</option>' + 
+                            data.data.map(source => 
+                                `<option value="${source.id}">${source.name}</option>`
+                            ).join('');
+                    } else {
+                        document.getElementById('renewable-sources-list').innerHTML = '<p style="color: #aaa;">No renewable sources available. Add one first!</p>';
+                        document.getElementById('renewable-source-id').innerHTML = '<option value="">No sources available</option>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading renewable sources:', error);
+                    document.getElementById('renewable-sources-list').innerHTML = '<p style="color: #ef4444;">Error loading sources</p>';
+                });
         }
 
         function recordRenewableData() {
-            alert('✅ Data recorded!');
+            const sourceId = document.getElementById('renewable-source-id').value;
+            const power = document.getElementById('renewable-power').value;
+            const efficiency = document.getElementById('renewable-efficiency').value;
+
+            if (!sourceId || !power || !efficiency) {
+                alert('❌ Please fill all fields');
+                return;
+            }
+
+            fetch(API_BASE + '/renewable/record-data/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    source: parseInt(sourceId),
+                    power_generated: parseFloat(power),
+                    efficiency: parseFloat(efficiency)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ Data recorded!');
+                    document.getElementById('renewable-power').value = '';
+                    document.getElementById('renewable-efficiency').value = '';
+                } else {
+                    alert('❌ Error: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Error recording data');
+            });
         }
 
         function getCarbonSavings() {
-            const html = `
-                <div class="metric">
-                    <span class="metric-label">Total Carbon Saved:</span>
-                    <span class="metric-value">1250 kg CO₂</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Cost Saved:</span>
-                    <span class="metric-value">$5000</span>
-                </div>
-            `;
-            document.getElementById('carbon-stats').innerHTML = html;
+            fetch(API_BASE + '/renewable/carbon-savings/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.totals) {
+                        const totals = data.totals;
+                        const html = `
+                            <div class="metric">
+                                <span class="metric-label">Total Renewable Energy:</span>
+                                <span class="metric-value">${(totals.renewable_energy_kwh || 0).toFixed(2)} kWh</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Total Carbon Saved:</span>
+                                <span class="metric-value">${(totals.carbon_saved_kg || 0).toFixed(2)} kg CO₂</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Cost Saved:</span>
+                                <span class="metric-value">$${(totals.cost_saved || 0).toFixed(2)}</span>
+                            </div>
+                        `;
+                        document.getElementById('carbon-stats').innerHTML = html;
+                    } else {
+                        document.getElementById('carbon-stats').innerHTML = '<p style="color: #aaa;">No carbon savings data available</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('carbon-stats').innerHTML = '<p style="color: #ef4444;">Error loading carbon data</p>';
+                });
         }
 
         // ===== INITIALIZE ON LOAD =====
