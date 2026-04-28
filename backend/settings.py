@@ -156,14 +156,25 @@ TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER', '')
 SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
 
 # ✅ CELERY Configuration - Async Tasks for Alerts & Emails
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
-CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'memory://')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'db+sqlite:///celery.db')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
+
+# Redis SSL Fix (if using Redis Cloud)
+if 'rediss://' in CELERY_BROKER_URL:
+    CELERY_BROKER_USE_SSL = {
+        'ssl_cert_reqs': 'CERT_NONE',
+        'ssl_check_hostname': False,
+    }
+    CELERY_REDIS_BACKEND_USE_SSL = {
+        'ssl_cert_reqs': 'CERT_NONE',
+        'ssl_check_hostname': False,
+    }
 
 # ✅ CELERY BEAT - Periodic Tasks Schedule (AI PREDICTIONS)
 CELERY_BEAT_SCHEDULE = {
