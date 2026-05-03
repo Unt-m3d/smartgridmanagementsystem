@@ -9,7 +9,7 @@ django.setup()
 from energy.models import EnergyData
 from django.utils import timezone
 
-print("🔌 Creating test energy data...")
+print("Creating test energy data...")
 
 # Clear existing data (optional)
 EnergyData.objects.all().delete()
@@ -35,14 +35,14 @@ for i in range(100):
         device_on=True,
         timestamp=timestamp
     )
-    print(f"  ✅ {i+1}/100 - {timestamp.strftime('%H:%M:%S')} | {power:.0f}W")
+    print(f"{i+1}/100 - {timestamp.strftime('%H:%M:%S')} | {power:.0f}W")
 
-print("\n✅ Test data created successfully!")
-print(f"📊 Total records: {EnergyData.objects.count()}")
+print("\nTest data created successfully!")
+print(f"Total records: {EnergyData.objects.count()}")
 
 # Display latest data
 latest = EnergyData.objects.latest('timestamp')
-print(f"\n📈 Latest reading:")
+print(f"\nLatest reading:")
 print(f"   Voltage: {latest.voltage}V")
 print(f"   Current: {latest.current}A")
 print(f"   Power: {latest.power}W")

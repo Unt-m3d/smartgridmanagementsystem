@@ -484,5 +484,5 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
 ''')
 
-print("✅ All apps created successfully!")
-print("✅ Next step: python manage.py makemigrations && python manage.py migrate")
+print("All apps created successfully!")
+print("Next step: python manage.py makemigrations && python manage.py migrate")

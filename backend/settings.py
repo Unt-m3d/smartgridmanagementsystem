@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-dev-key-change-in-production')
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-# ✅ MOBILE & WEB ACCESS - Allow all hosts
+#  MOBILE & WEB ACCESS - Allow all hosts
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [

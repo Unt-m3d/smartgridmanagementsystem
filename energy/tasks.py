@@ -21,14 +21,14 @@ def predict_future_energy(self):
         ).values_list('power', flat=True).order_by('timestamp'))
         
         if len(training_data) < 24:
-            logger.warning("❌ Not enough data for prediction (need 24+ records)")
+            logger.warning("Not enough data for prediction (need 24+ records)")
             return {"status": "insufficient_data", "records": len(training_data)}
         
         # Make predictions
         predictions = predict_energy_usage(training_data)
         
         if not predictions:
-            logger.warning("❌ Prediction returned empty results")
+            logger.warning("Prediction returned empty results")
             return {"status": "empty_predictions"}
         
         # Clear old predictions (older than 24 hours)
@@ -43,7 +43,7 @@ def predict_future_energy(self):
                 confidence_score=pred['confidence']
             )
         
-        logger.info(f"✅ Successfully predicted {len(predictions)} data points")
+        logger.info(f"Successfully predicted {len(predictions)} data points")
         return {
             "status": "success",
             "predictions_count": len(predictions),
@@ -51,7 +51,7 @@ def predict_future_energy(self):
         }
         
     except Exception as e:
-        logger.error(f"❌ Prediction error: {str(e)}")
+        logger.error(f"Prediction error: {str(e)}")
         raise self.retry(exc=e, countdown=60)
 
 
@@ -80,19 +80,19 @@ def check_energy_anomalies(self):
                     alert = Alert.objects.create(
                         user=user,
                         alert_type='ANOMALY',
-                        message=f"⚠️ Anomaly detected: Unusual power pattern at {recent_data[idx].timestamp}"
+                        message=f"Anomaly detected: Unusual power pattern at {recent_data[idx].timestamp}"
                     )
                     send_alert_notifications.delay(alert.id)
-                    logger.info(f"✅ Anomaly alert created: ID {alert.id}")
+                    logger.info(f"Anomaly alert created: ID {alert.id}")
         
-        logger.info(f"✅ Anomaly detection complete: {len(anomaly_indices)} anomalies found")
+        logger.info(f"Anomaly detection complete: {len(anomaly_indices)} anomalies found")
         return {
             "status": "success",
             "anomalies_found": len(anomaly_indices)
         }
         
     except Exception as e:
-        logger.error(f"❌ Anomaly detection error: {str(e)}")
+        logger.error(f"Anomaly detection error: {str(e)}")
         raise self.retry(exc=e, countdown=60)
 
 
@@ -115,7 +115,7 @@ def send_alert_notifications(self, alert_id):
         if profile.enable_sms_alerts and profile.phone_number:
             send_sms_alert.delay(
                 phone=profile.phone_number,
-                message=f"⚠️ {alert.alert_type}: {alert.message}"
+                message=f"{alert.alert_type}: {alert.message}"
             )
             alert.sms_sent = True
         
@@ -129,14 +129,14 @@ def send_alert_notifications(self, alert_id):
             alert.email_sent = True
         
         alert.save()
-        logger.info(f"✅ Notifications sent for alert {alert_id}")
+        logger.info(f"Notifications sent for alert {alert_id}")
         return {"status": "success"}
         
     except Alert.DoesNotExist:
-        logger.error(f"❌ Alert {alert_id} not found")
+        logger.error(f"Alert {alert_id} not found")
         return {"status": "alert_not_found"}
     except Exception as e:
-        logger.error(f"❌ Alert notification error: {str(e)}")
+        logger.error(f"Alert notification error: {str(e)}")
         raise self.retry(exc=e, countdown=60)
 
 
@@ -145,7 +145,7 @@ def send_sms_alert(self, phone, message):
     """Send SMS using Twilio"""
     try:
         if not settings.TWILIO_ACCOUNT_SID:
-            logger.warning("⚠️ Twilio not configured")
+            logger.warning("Twilio not configured")
             return {"status": "not_configured"}
         
         client = Client(
@@ -157,11 +157,11 @@ def send_sms_alert(self, phone, message):
             from_=settings.TWILIO_PHONE_NUMBER,
             to=phone
         )
-        logger.info(f"✅ SMS sent to {phone}")
+        logger.info(f"SMS sent to {phone}")
         return {"status": "success"}
         
     except Exception as e:
-        logger.error(f"❌ SMS sending failed: {str(e)}")
+        logger.error(f"SMS sending failed: {str(e)}")
         raise self.retry(exc=e, countdown=60)
 
 
@@ -176,9 +176,9 @@ def send_email_alert(self, email, subject, message):
             recipient_list=[email],
             fail_silently=False,
         )
-        logger.info(f"✅ Email sent to {email}")
+        logger.info(f"Email sent to {email}")
         return {"status": "success"}
         
     except Exception as e:
-        logger.error(f"❌ Email sending failed: {str(e)}")
+        logger.error(f"Email sending failed: {str(e)}")
         raise self.retry(exc=e, countdown=60)

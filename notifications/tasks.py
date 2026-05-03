@@ -235,7 +235,7 @@ def check_energy_alerts():
 @shared_task
 def send_test_alert(email, phone=None):
     """
-    ✅ TEST ALERT - For debugging
+    TEST ALERT - For debugging
     """
     logger.info("Sending test alert...")
     

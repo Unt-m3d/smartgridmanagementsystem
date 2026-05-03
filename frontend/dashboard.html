@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ Smart Grid - All Features</title>
+    <title>Smart Grid - All Features</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
@@ -284,18 +284,18 @@
 </head>
 <body>
     <div class="header">
-        <h1>⚡ Smart Grid Management System</h1>
+        <h1>Smart Grid Management System</h1>
         <p>Complete Energy Monitoring & Control Dashboard</p>
         <div class="real-time-clock" id="realtimeClock">--:--:--</div>
-        <div class="status-indicator" id="statusIndicator">🟢 Demo Mode - Live Data</div>
+        <div class="status-indicator" id="statusIndicator">Live Data</div>
     </div>
 
     <div class="nav-tabs">
-        <button class="active" onclick="switchTab('dashboard')">📊 Dashboard</button>
-        <button onclick="switchTab('graphs')">📈 Graphs</button>
-        <button onclick="switchTab('prediction')">🤖 Predictions</button>
-        <button onclick="switchTab('alerts')">🔔 Alerts</button>
-        <button onclick="switchTab('renewable')">☀️ Renewable</button>
+        <button class="active" onclick="switchTab('dashboard')">Dashboard</button>
+        <button onclick="switchTab('graphs')">Graphs</button>
+        <button onclick="switchTab('prediction')">Predictions</button>
+        <button onclick="switchTab('alerts')">Alerts</button>
+        <button onclick="switchTab('renewable')">Renewable</button>
     </div>
 
     <div class="container">
@@ -304,7 +304,7 @@
         <div id="dashboard" class="tab-content active">
             <div class="grid">
                 <div class="card">
-                    <h2>⚡ Real-Time Status</h2>
+                    <h2>Real Time Status</h2>
                     <div class="metric">
                         <span class="metric-label">Current Power:</span>
                         <span class="metric-value" id="current-power">0 W</span>
@@ -322,14 +322,14 @@
                         <span class="metric-value" id="device-status">ON</span>
                     </div>
                     <div style="margin-top: 20px;">
-                        <button onclick="turnDeviceOn()">✅ Turn ON</button>
-                        <button onclick="turnDeviceOff()">❌ Turn OFF</button>
-                        <button onclick="refreshDashboard()">🔄 Refresh</button>
+                        <button onclick="turnDeviceOn()">Turn ON</button>
+                        <button onclick="turnDeviceOff()">Turn OFF</button>
+                        <button onclick="refreshDashboard()">Refresh</button>
                     </div>
                 </div>
 
                 <div class="card">
-                    <h2>📊 Statistics (7 Days)</h2>
+                    <h2>Statistics (7 Days)</h2>
                     <div class="metric">
                         <span class="metric-label">Avg Power:</span>
                         <span class="metric-value" id="stat-avg">2500 W</span>
@@ -342,13 +342,13 @@
                         <span class="metric-label">Data Points:</span>
                         <span class="metric-value" id="stat-points">672</span>
                     </div>
-                    <button onclick="getStatistics()" style="margin-top: 20px; width: 100%;">📊 Load Statistics</button>
+                    <button onclick="getStatistics()" style="margin-top: 20px; width: 100%;">Load Statistics</button>
                 </div>
             </div>
 
             <!-- Real-Time Graph Below -->
             <div class="live-graph-container">
-                <h2>📊 Real-Time Power Graph (Live Updates)</h2>
+                <h2>Real-Time Power Graph (Live Updates)</h2>
                 <div class="chart-container">
                     <canvas id="liveChart"></canvas>
                 </div>
@@ -356,7 +356,7 @@
 
             <!-- 7-Day Trend Graph -->
             <div class="live-graph-container" style="margin-top: 20px;">
-                <h2>📈 7-Day Energy Trend</h2>
+                <h2>7-Day Energy Trend</h2>
                 <div class="chart-container">
                     <canvas id="sevenDayChart"></canvas>
                 </div>
@@ -367,20 +367,20 @@
         <div id="graphs" class="tab-content">
             <div class="grid full-width">
                 <div class="card full-width">
-                    <h2>📈 Daily Energy Trends (Last 30 Days)</h2>
+                    <h2>Daily Energy Trends (Last 30 Days)</h2>
                     <div class="chart-container">
                         <canvas id="dailyTrendsChart"></canvas>
                     </div>
-                    <button onclick="loadDailyTrends()">📊 Load Daily Trends</button>
-                    <button onclick="calculateTrends()">🔢 Calculate Today</button>
+                    <button onclick="loadDailyTrends()">Load Daily Trends</button>
+                    <button onclick="calculateTrends()">Calculate Today</button>
                 </div>
 
                 <div class="card full-width">
-                    <h2>⏰ Hourly Energy Trends (Last 24 Hours)</h2>
+                    <h2>Hourly Energy Trends (Last 24 Hours)</h2>
                     <div class="chart-container">
                         <canvas id="hourlyTrendsChart"></canvas>
                     </div>
-                    <button onclick="loadHourlyTrends()">📊 Load Hourly Data</button>
+                    <button onclick="loadHourlyTrends()">Load Hourly Data</button>
                 </div>
             </div>
         </div>
@@ -389,15 +389,15 @@
         <div id="prediction" class="tab-content">
             <div class="grid full-width">
                 <div class="card full-width">
-                    <h2>🤖 AI Energy Predictions (Next 48 Hours)</h2>
+                    <h2>AI Energy Predictions (Next 48 Hours)</h2>
                     <div class="chart-container">
                         <canvas id="predictionChart"></canvas>
                     </div>
-                    <button onclick="loadPredictions()">🔮 Load Predictions</button>
+                    <button onclick="loadPredictions()">Load Predictions</button>
                 </div>
 
                 <div class="card full-width">
-                    <h2>📋 Prediction Details</h2>
+                    <h2>Prediction Details</h2>
                     <div id="prediction-details"></div>
                 </div>
             </div>
@@ -407,7 +407,7 @@
         <div id="alerts" class="tab-content">
             <div class="grid">
                 <div class="card">
-                    <h2>📝 Register Contact</h2>
+                    <h2>Register Contact</h2>
                     
                     <label>Email Address:</label>
                     <input type="email" id="alert-email" placeholder="your-email@example.com">
@@ -425,22 +425,22 @@
                         <label for="sms-alerts" style="margin: 0;">Receive SMS Alerts</label>
                     </div>
                     
-                    <button onclick="registerContact()" style="width: 100%; margin-top: 15px;">📝 Register Contact</button>
-                    <button onclick="testEmail()" style="width: 100%;">✉️ Test Email</button>
-                    <button onclick="testSMS()" style="width: 100%;">📱 Test SMS</button>
+                    <button onclick="registerContact()" style="width: 100%; margin-top: 15px;">Register Contact</button>
+                    <button onclick="testEmail()" style="width: 100%;">Test Email</button>
+                    <button onclick="testSMS()" style="width: 100%;">Test SMS</button>
                 </div>
 
                 <div class="card">
-                    <h2>⚙️ Create Alert Rule</h2>
+                    <h2>Create Alert Rule</h2>
                     
                     <label>Rule Name:</label>
                     <input type="text" id="rule-name" placeholder="e.g., High Voltage Alert">
                     
                     <label>Alert Type:</label>
                     <select id="rule-type">
-                        <option value="voltage_high">⚠️ High Voltage (>250V)</option>
-                        <option value="voltage_low">⚠️ Low Voltage (<200V)</option>
-                        <option value="power_high">⚠️ High Power (>5000W)</option>
+                        <option value="voltage_high">High Voltage (>250V)</option>
+                        <option value="voltage_low">Low Voltage (<200V)</option>
+                        <option value="power_high">High Power (>5000W)</option>
                     </select>
                     
                     <label>Threshold Value:</label>
@@ -452,9 +452,9 @@
 
             <div class="grid full-width">
                 <div class="card full-width">
-                    <h2>📋 Active Alert Rules</h2>
+                    <h2>Active Alert Rules</h2>
                     <div id="alert-rules-list"></div>
-                    <button onclick="getAlertRules()" style="width: 100%;">🔄 Refresh Rules</button>
+                    <button onclick="getAlertRules()" style="width: 100%;">Refresh Rules</button>
                 </div>
             </div>
         </div>
@@ -463,7 +463,7 @@
         <div id="renewable" class="tab-content">
             <div class="grid">
                 <div class="card">
-                    <h2>☀️ Add Renewable Source</h2>
+                    <h2>Add Renewable Source</h2>
                     
                     <label>Source Name:</label>
                     <input type="text" id="renewable-name" placeholder="e.g., Rooftop Solar">
@@ -497,7 +497,7 @@
                     <label>Efficiency (%):</label>
                     <input type="number" id="renewable-efficiency" placeholder="85" min="0" max="100" step="0.1">
                     
-                    <button onclick="recordRenewableData()" style="width: 100%; margin-top: 15px;">📝 Record Data</button>
+                    <button onclick="recordRenewableData()" style="width: 100%; margin-top: 15px;">Record Data</button>
                 </div>
             </div>
 
@@ -505,7 +505,7 @@
                 <div class="card full-width">
                     <h2>🌍 Renewable Sources</h2>
                     <div id="renewable-sources-list"></div>
-                    <button onclick="getRenewableSources()" style="width: 100%;">🔄 Refresh Sources</button>
+                    <button onclick="getRenewableSources()" style="width: 100%;">Refresh Sources</button>
                 </div>
 
                 <div class="card full-width">
@@ -514,7 +514,7 @@
                         <canvas id="carbonChart"></canvas>
                     </div>
                     <div id="carbon-stats" class="stats-box"></div>
-                    <button onclick="getCarbonSavings()">📊 Load Carbon Data</button>
+                    <button onclick="getCarbonSavings()">Load Carbon Data</button>
                 </div>
             </div>
         </div>
@@ -729,16 +729,16 @@
 
         function turnDeviceOn() {
             document.getElementById('device-status').textContent = 'ON';
-            alert('✅ Device turned ON');
+            alert('Device turned ON');
         }
 
         function turnDeviceOff() {
             document.getElementById('device-status').textContent = 'OFF';
-            alert('✅ Device turned OFF');
+            alert('Device turned OFF');
         }
 
         function getStatistics() {
-            alert('✅ Statistics Loaded!\n\nAvg Power: 2500 W\nPeak Power: 4800 W\nData Points: 672');
+            alert('Statistics Loaded!\n\nAvg Power: 2500 W\nPeak Power: 4800 W\nData Points: 672');
         }
 
         // ===== GRAPH FUNCTIONS =====
@@ -797,7 +797,7 @@
                     }
                 }
             });
-            alert('✅ Daily Trends Loaded!');
+            alert('Daily Trends Loaded!');
         }
 
         function loadHourlyTrends() {
@@ -836,11 +836,11 @@
                     }
                 }
             });
-            alert('✅ Hourly Trends Loaded!');
+            alert('Hourly Trends Loaded!');
         }
 
         function calculateTrends() {
-            alert('✅ Trends Calculated!');
+            alert('Trends Calculated!');
             loadDailyTrends();
         }
 
@@ -898,34 +898,34 @@
             ).join('');
             document.getElementById('prediction-details').innerHTML = detailsHtml;
             
-            alert('✅ Predictions Loaded!');
+            alert('Predictions Loaded!');
         }
 
         // ===== ALERT FUNCTIONS =====
         function registerContact() {
             const email = document.getElementById('alert-email').value;
             if (!email) {
-                alert('❌ Please enter email');
+                alert('Please enter email');
                 return;
             }
-            alert('✅ Contact registered!');
+            alert('Contact registered!');
         }
 
         function testEmail() {
-            alert('✅ Test email sent!');
+            alert('Test email sent!');
         }
 
         function testSMS() {
-            alert('✅ Test SMS sent!');
+            alert('Test SMS sent!');
         }
 
         function createAlertRule() {
             const name = document.getElementById('rule-name').value;
             if (!name) {
-                alert('❌ Please enter rule name');
+                alert('Please enter rule name');
                 return;
             }
-            alert('✅ Alert rule created!');
+            alert('Alert rule created!');
         }
 
         function getAlertRules() {
@@ -950,7 +950,7 @@
             const location = document.getElementById('renewable-location').value;
 
             if (!name || !type || !capacity || !location) {
-                alert('❌ Please fill all fields');
+                alert('Please fill all fields');
                 return;
             }
 
@@ -971,18 +971,18 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('✅ Renewable source added!');
+                    alert('Renewable source added!');
                     document.getElementById('renewable-name').value = '';
                     document.getElementById('renewable-capacity').value = '';
                     document.getElementById('renewable-location').value = '';
                     getRenewableSources();
                 } else {
-                    alert('❌ Error: ' + (data.error || 'Unknown error'));
+                    alert('Error: ' + (data.error || 'Unknown error'));
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('❌ Error adding renewable source');
+                alert('Error adding renewable source');
             });
         }
 
@@ -1023,7 +1023,7 @@
             const efficiency = document.getElementById('renewable-efficiency').value;
 
             if (!sourceId || !power || !efficiency) {
-                alert('❌ Please fill all fields');
+                alert('Please fill all fields');
                 return;
             }
 
@@ -1041,16 +1041,16 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('✅ Data recorded!');
+                    alert('Data recorded!');
                     document.getElementById('renewable-power').value = '';
                     document.getElementById('renewable-efficiency').value = '';
                 } else {
-                    alert('❌ Error: ' + (data.error || 'Unknown error'));
+                    alert('Error: ' + (data.error || 'Unknown error'));
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('❌ Error recording data');
+                alert('Error recording data');
             });
         }
 
