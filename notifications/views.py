@@ -26,11 +26,8 @@ def register_contact(request):
             'error': serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        logger.error(f"Error registering contact: {str(e)}")
-        return Response({
-            'success': False,
-            'error': str(e)
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        logger.error(f"Error: {str(e)}")
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
@@ -45,16 +42,10 @@ def create_alert_rule(request):
                 'message': 'Alert rule created',
                 'data': serializer.data
             }, status=status.HTTP_201_CREATED)
-        return Response({
-            'success': False,
-            'errors': serializer.errors
-        }, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'success': False, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        logger.error(f"Error creating alert rule: {str(e)}")
-        return Response({
-            'success': False,
-            'error': str(e)
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        logger.error(f"Error: {str(e)}")
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])
@@ -63,15 +54,10 @@ def get_alert_rules(request):
     try:
         rules = AlertRule.objects.filter(is_active=True)
         serializer = AlertRuleSerializer(rules, many=True)
-        return Response({
-            'success': True,
-            'data': serializer.data
-        }, status=status.HTTP_200_OK)
+        return Response({'success': True, 'data': serializer.data}, status=status.HTTP_200_OK)
     except Exception as e:
-        logger.error(f"Error fetching alert rules: {str(e)}")
-        return Response({
-            'error': str(e)
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        logger.error(f"Error: {str(e)}")
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
@@ -80,31 +66,24 @@ def test_email_alert(request):
     try:
         email = request.data.get('email')
         if not email:
-            return Response({
-                'error': 'Email required'
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Email required'}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Send email asynchronously using Celery
-        send_email_alert.delay(
+        # ✅ SEND EMAIL IMMEDIATELY
+        result = send_email_alert(
             email=email,
             subject='🔌 Smart Grid Test Alert',
             message='This is a test email from your Smart Grid Management System.',
-            html_message='''
-            <h2>🔌 Smart Grid Test Alert</h2>
-            <p>This is a test email from your Smart Grid Management System.</p>
-            <p>If you received this, email notifications are working correctly!</p>
-            '''
+            html_message='<h2>🔌 Smart Grid Test Alert</h2><p>If you received this, email notifications are working!</p>'
         )
         
-        return Response({
-            'success': True,
-            'message': f'Test email queued for {email}'
-        }, status=status.HTTP_200_OK)
+        if result:
+            return Response({'success': True, 'message': f'✅ Email sent to {email}'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'success': False, 'message': 'Failed to send email'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
     except Exception as e:
-        logger.error(f"Error sending test email: {str(e)}")
-        return Response({
-            'error': str(e)
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        logger.error(f"Error: {str(e)}")
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
@@ -113,26 +92,22 @@ def test_sms_alert(request):
     try:
         phone = request.data.get('phone')
         if not phone:
-            return Response({
-                'error': 'Phone required'
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Phone required'}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Validate phone format (basic check)
         if not phone.startswith('+'):
             phone = '+' + phone
         
-        # Send SMS asynchronously using Celery
-        send_sms_alert.delay(
+        # ✅ SEND SMS IMMEDIATELY
+        result = send_sms_alert(
             phone=phone,
-            message='🔌 Smart Grid Test: If you received this, SMS alerts are working!'
+            message='🔌 Smart Grid Test: Your SMS alerts are working!'
         )
         
-        return Response({
-            'success': True,
-            'message': f'Test SMS queued for {phone}'
-        }, status=status.HTTP_200_OK)
+        if result:
+            return Response({'success': True, 'message': f'✅ SMS sent to {phone}'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'success': False, 'message': 'Failed to send SMS'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
     except Exception as e:
-        logger.error(f"Error sending test SMS: {str(e)}")
-        return Response({
-            'error': str(e)
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        logger.error(f"Error: {str(e)}")
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -108,7 +108,7 @@ STATICFILES_DIRS = [
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# ✅ CORS: Enable mobile access from any device on network
+#  CORS: Enable mobile access from any device on network
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
@@ -130,7 +130,7 @@ REST_FRAMEWORK = {
     ],
 }
 
-# ✅ ALERT THRESHOLDS
+#  ALERT THRESHOLDS
 ALERT_SETTINGS = {
     'HIGH_VOLTAGE': 240,
     'LOW_VOLTAGE': 190,
@@ -138,7 +138,7 @@ ALERT_SETTINGS = {
     'HIGH_POWER': 400,
 }
 
-# ✅ EMAIL CONFIGURATION - Gmail or SendGrid
+#  EMAIL CONFIGURATION - Gmail or SendGrid
 EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
@@ -147,15 +147,15 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@smartgrid.com')
 
-# ✅ SMS CONFIGURATION - Twilio
+#  SMS CONFIGURATION - Twilio
 TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
 TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')
 TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER', '')
 
-# ✅ SENDGRID Configuration (Optional)
+#  SENDGRID Configuration (Optional)
 SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
 
-# ✅ CELERY Configuration - Async Tasks for Alerts & Emails
+#  CELERY Configuration - Async Tasks for Alerts & Emails
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'memory://')
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'db+sqlite:///celery.db')
 CELERY_ACCEPT_CONTENT = ['json']
@@ -164,6 +164,7 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_WORKER_POOL = 'solo' 
 
 # Redis SSL Fix (if using Redis Cloud)
 if 'rediss://' in CELERY_BROKER_URL:
