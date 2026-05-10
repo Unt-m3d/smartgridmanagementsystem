@@ -28,28 +28,54 @@ def register_contact(request):
         }, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         logger.error(f"Error registering contact: {str(e)}")
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
 def create_alert_rule(request):
-    """Create alert rule"""
+    """Create alert rule - FIXED"""
     try:
-        serializer = AlertRuleSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
+        name = request.data.get('name')
+        alert_type = request.data.get('alert_type')
+        threshold = request.data.get('threshold')
+        
+        if not name or not alert_type or threshold is None:
             return Response({
-                'success': True,
-                'message': 'Alert rule created successfully',
-                'data': serializer.data
-            }, status=status.HTTP_201_CREATED)
+                'success': False,
+                'error': 'Missing required fields: name, alert_type, threshold'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            threshold = float(threshold)
+        except (ValueError, TypeError):
+            return Response({
+                'success': False,
+                'error': 'Threshold must be a valid number'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        alert_rule = AlertRule.objects.create(
+            name=name,
+            alert_type=alert_type,
+            threshold=threshold,
+            is_active=True
+        )
+        
+        serializer = AlertRuleSerializer(alert_rule)
         return Response({
-            'success': False,
-            'errors': serializer.errors
-        }, status=status.HTTP_400_BAD_REQUEST)
+            'success': True,
+            'message': 'Alert rule created successfully',
+            'data': serializer.data
+        }, status=status.HTTP_201_CREATED)
+        
     except Exception as e:
         logger.error(f"Error creating alert rule: {str(e)}")
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])
@@ -60,11 +86,15 @@ def get_alert_rules(request):
         serializer = AlertRuleSerializer(rules, many=True)
         return Response({
             'success': True,
-            'data': serializer.data
+            'data': serializer.data,
+            'count': rules.count()
         }, status=status.HTTP_200_OK)
     except Exception as e:
         logger.error(f"Error getting alert rules: {str(e)}")
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
@@ -78,8 +108,6 @@ def test_email_alert(request):
                 'success': False,
                 'error': 'Email required'
             }, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Support both single email string and list of emails
         
         result = send_email_alert(
             email=email,
@@ -102,7 +130,6 @@ def test_email_alert(request):
         )
         
         if result:
-            # Format email list for response
             email_list = email if isinstance(email, list) else [email]
             return Response({
                 'success': True,
@@ -118,6 +145,7 @@ def test_email_alert(request):
     except Exception as e:
         logger.error(f"Error in test_email_alert: {str(e)}")
         return Response({
+            'success': False,
             'error': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -155,13 +183,14 @@ def test_sms_alert(request):
     except Exception as e:
         logger.error(f"Error in test_sms_alert: {str(e)}")
         return Response({
+            'success': False,
             'error': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
 def send_bulk_email_alert(request):
-    """Send email to multiple recipients - NEW ENDPOINT"""
+    """Send email to multiple recipients"""
     try:
         emails = request.data.get('emails', [])
         subject = request.data.get('subject', 'Smart Grid Alert')
@@ -180,7 +209,6 @@ def send_bulk_email_alert(request):
                 'error': 'Message required'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Handle both list and comma-separated string
         if isinstance(emails, str):
             emails = [e.strip() for e in emails.split(',')]
         
@@ -206,5 +234,6 @@ def send_bulk_email_alert(request):
     except Exception as e:
         logger.error(f"Error in send_bulk_email_alert: {str(e)}")
         return Response({
+            'success': False,
             'error': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

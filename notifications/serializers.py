@@ -9,4 +9,4 @@ class UserContactSerializer(serializers.ModelSerializer):
 class AlertRuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = AlertRule
-        fields = ['id', 'name', 'alert_type', 'threshold', 'is_active', 'contact']
+        fields = ['id', 'name', 'alert_type', 'threshold', 'is_active', 'contact', 'created_at']

@@ -15,7 +15,7 @@ class AlertRule(models.Model):
     alert_type = models.CharField(max_length=50, choices=[('voltage_high', 'High Voltage'), ('voltage_low', 'Low Voltage'), ('power_high', 'High Power')])
     threshold = models.FloatField()
     is_active = models.BooleanField(default=True)
-    contact = models.ForeignKey(UserContact, on_delete=models.CASCADE)
+    contact = models.ForeignKey(UserContact, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
