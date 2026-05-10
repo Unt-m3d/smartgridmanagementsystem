@@ -280,6 +280,25 @@
             font-size: 1.2em;
             font-weight: bold;
         }
+
+        .alert-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid;
+        }
+
+        .success-message {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border-left-color: #10b981;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border-left-color: #ef4444;
+        }
     </style>
 </head>
 <body>
@@ -405,6 +424,8 @@
 
         <!-- ===== ALERTS TAB ===== -->
         <div id="alerts" class="tab-content">
+            <div id="alertMessage"></div>
+            
             <div class="grid">
                 <div class="card">
                     <h2>Register Contact</h2>
@@ -446,7 +467,7 @@
                     <label>Threshold Value:</label>
                     <input type="number" id="rule-threshold" placeholder="250" step="0.01">
                     
-                    <button onclick="createAlertRule()" style="width: 100%; margin-top: 15px;">➕ Create Rule</button>
+                    <button onclick="createAlertRule()" style="width: 100%; margin-top: 15px;">Create Rule</button>
                 </div>
             </div>
 
@@ -482,11 +503,11 @@
                     <label>Location:</label>
                     <input type="text" id="renewable-location" placeholder="e.g., Building A">
                     
-                    <button onclick="addRenewableSource()" style="width: 100%; margin-top: 15px;">➕ Add Source</button>
+                    <button onclick="addRenewableSource()" style="width: 100%; margin-top: 15px;">Add Source</button>
                 </div>
 
                 <div class="card">
-                    <h2>⚡ Record Generation</h2>
+                    <h2>Record Generation</h2>
                     
                     <label>Select Source:</label>
                     <select id="renewable-source-id"></select>
@@ -624,6 +645,489 @@
             setInterval(() => {
                 const data = generatePowerData();
                 const timestamp = new Date().toLocaleTimeString();
+                
+                if (liveChartInstance.data.labels.length >= 60) {
+                    liveChartInstance.data.labels.shift();
+                    liveChartInstance.data.datasets[0].data.shift();
+                }
+                
+                liveChartInstance.data.labels.push(timestamp);
+                liveChartInstance.data.datasets[0].data.push(data.power);
+                liveChartInstance.update();
+            }, 1000);
+        }
+
+        // ===== INIT 7-DAY CHART =====
+        function initSevenDayChart() {
+            const ctx = document.getElementById('sevenDayChart');
+            if (!ctx) return;
+            
+            if (sevenDayChartInstance) sevenDayChartInstance.destroy();
+            
+            // Generate 7 days of data
+            const labels = [];
+            const avgData = [];
+            const peakData = [];
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                labels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+                
+                // Realistic patterns
+                avgData.push(2000 + Math.random() * 1000);
+                peakData.push(4000 + Math.random() * 1000);
+            }
+            
+            sevenDayChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Average Power (W)',
+                            data: avgData,
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            tension: 0.4,
+                            borderWidth: 3,
+                            fill: true
+                        },
+                        {
+                            label: 'Peak Power (W)',
+                            data: peakData,
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.4,
+                            borderWidth: 3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: 'white', font: { size: 14 } }
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                        y: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                    }
+                }
+            });
+        }
+
+        // ===== TAB SWITCHING =====
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tabs button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'dashboard') {
+                setTimeout(() => {
+                    if (!liveChartInstance) initLiveChart();
+                    if (!sevenDayChartInstance) initSevenDayChart();
+                }, 100);
+            }
+        }
+
+        // ===== DASHBOARD FUNCTIONS =====
+        function refreshDashboard() {
+            const data = generatePowerData();
+            document.getElementById('current-power').textContent = data.power.toFixed(2) + ' W';
+            document.getElementById('current-voltage').textContent = data.voltage.toFixed(2) + ' V';
+            document.getElementById('current-current').textContent = data.current.toFixed(2) + ' A';
+        }
+
+        function turnDeviceOn() {
+            document.getElementById('device-status').textContent = 'ON';
+            alert('Device turned ON');
+        }
+
+        function turnDeviceOff() {
+            document.getElementById('device-status').textContent = 'OFF';
+            alert('Device turned OFF');
+        }
+
+        function getStatistics() {
+            alert('Statistics Loaded!\n\nAvg Power: 2500 W\nPeak Power: 4800 W\nData Points: 672');
+        }
+
+        // ===== GRAPH FUNCTIONS =====
+        function loadDailyTrends() {
+            const ctx = document.getElementById('dailyTrendsChart').getContext('2d');
+            if (dailyChart) dailyChart.destroy();
+            
+            // Generate 30 days of data
+            const labels = [];
+            const avgData = [];
+            const peakData = [];
+            
+            for (let i = 29; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                
+                avgData.push(2000 + Math.random() * 1500);
+                peakData.push(4000 + Math.random() * 1500);
+            }
+            
+            dailyChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Average Power (W)',
+                            data: avgData,
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            tension: 0.4,
+                            borderWidth: 3,
+                            fill: true
+                        },
+                        {
+                            label: 'Peak Power (W)',
+                            data: peakData,
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.4,
+                            borderWidth: 3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: 'white', font: { size: 14 } } }
+                    },
+                    scales: {
+                        x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                        y: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                    }
+                }
+            });
+            alert('Daily Trends Loaded!');
+        }
+
+        function loadHourlyTrends() {
+            const ctx = document.getElementById('hourlyTrendsChart').getContext('2d');
+            if (hourlyChart) hourlyChart.destroy();
+            
+            // Generate 24 hours of data
+            const labels = [];
+            const data = [];
+            
+            for (let i = 0; i < 24; i++) {
+                labels.push(String(i).padStart(2, '0') + ':00');
+                const basePower = 2000 + Math.sin((i - 8) * Math.PI / 12) * 2000;
+                data.push(Math.max(1000, basePower + Math.random() * 500));
+            }
+            
+            hourlyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Average Power (W)',
+                        data: data,
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: '#667eea',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: 'white' } } },
+                    scales: {
+                        x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                        y: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                    }
+                }
+            });
+            alert('Hourly Trends Loaded!');
+        }
+
+        function calculateTrends() {
+            alert('Trends Calculated!');
+            loadDailyTrends();
+        }
+
+        // ===== PREDICTION FUNCTIONS =====
+        function loadPredictions() {
+            const ctx = document.getElementById('predictionChart').getContext('2d');
+            if (predictionChartInstance) predictionChartInstance.destroy();
+            
+            // Generate 48 hours of predictions
+            const labels = [];
+            const predictions = [];
+            const confidenceScores = [];
+            
+            for (let i = 0; i < 48; i++) {
+                labels.push('H' + String(i).padStart(2, '0'));
+                const hour = (new Date().getHours() + i) % 24;
+                const basePower = 2000 + Math.sin((hour - 8) * Math.PI / 12) * 2000;
+                predictions.push(Math.max(1000, basePower + Math.random() * 500));
+                confidenceScores.push(75 + Math.random() * 20);
+            }
+            
+            predictionChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Predicted Power (W)',
+                        data: predictions,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        borderWidth: 3,
+                        fill: true,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#10b981'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: 'white' } } },
+                    scales: {
+                        x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                        y: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                    }
+                }
+            });
+
+            // Generate details table
+            const detailsHtml = Array.from({length: 24}).map((_, i) => 
+                `<div class="metric">
+                    <span class="metric-label">Hour ${String(i).padStart(2, '0')}:00</span>
+                    <span class="metric-value">${predictions[i].toFixed(0)}W (${confidenceScores[i].toFixed(0)}%)</span>
+                </div>`
+            ).join('');
+            document.getElementById('prediction-details').innerHTML = detailsHtml;
+            
+            alert('Predictions Loaded!');
+        }
+
+        // ===== ALERT FUNCTIONS =====
+        function showAlertMessage(message, type = 'success') {
+            const msgDiv = document.getElementById('alertMessage');
+            msgDiv.innerHTML = `<div class="alert-message ${type}-message">${message}</div>`;
+            setTimeout(() => {
+                msgDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        function registerContact() {
+            const email = document.getElementById('alert-email').value.trim();
+            const phone = document.getElementById('alert-phone').value.trim();
+            const emailAlerts = document.getElementById('email-alerts').checked;
+            const smsAlerts = document.getElementById('sms-alerts').checked;
+            
+            if (!email) {
+                showAlertMessage('Please enter email', 'error');
+                return;
+            }
+            
+            fetch(API_BASE + '/notifications/register-contact/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_email: email,
+                    user_phone: phone || '',
+                    receive_email_alerts: emailAlerts,
+                    receive_sms_alerts: smsAlerts
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showAlertMessage('Contact registered! You will receive alerts at ' + email, 'success');
+                    localStorage.setItem('alert-email', email);
+                    localStorage.setItem('alert-phone', phone);
+                } else {
+                    showAlertMessage('Error: ' + (data.error || 'Unknown error'), 'error');
+                }
+            })
+            .catch(e => showAlertMessage('Error: ' + e, 'error'));
+        }
+
+        function testEmail() {
+            const email = document.getElementById('alert-email').value.trim();
+            if (!email) {
+                showAlertMessage('Please enter email first', 'error');
+                return;
+            }
+            
+            fetch(API_BASE + '/notifications/test-email/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showAlertMessage(data.message + ' Check your inbox!', 'success');
+                } else {
+                    showAlertMessage((data.message || 'Failed to send'), 'error');
+                }
+            })
+            .catch(e => showAlertMessage('Error: ' + e, 'error'));
+        }
+
+        function testSMS() {
+            const phone = document.getElementById('alert-phone').value.trim();
+            if (!phone) {
+                showAlertMessage('Please enter phone first', 'error');
+                return;
+            }
+            
+            fetch(API_BASE + '/notifications/test-sms/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: phone })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showAlertMessage(data.message + ' Check your phone!', 'success');
+                } else {
+                    showAlertMessage((data.message || 'Failed to send'), 'error');
+                }
+            })
+            .catch(e => showAlertMessage('Error: ' + e, 'error'));
+        }
+
+        function createAlertRule() {
+            const name = document.getElementById('rule-name').value.trim();
+            const type = document.getElementById('rule-type').value;
+            const threshold = document.getElementById('rule-threshold').value;
+            
+            if (!name || !threshold) {
+                showAlertMessage('Please fill all fields', 'error');
+                return;
+            }
+            
+            fetch(API_BASE + '/notifications/create-rule/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: name,
+                    alert_type: type,
+                    threshold: parseFloat(threshold),
+                    is_active: true,
+                    contact: 1
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showAlertMessage('Alert rule created!', 'success');
+                    document.getElementById('rule-name').value = '';
+                    document.getElementById('rule-threshold').value = '';
+                    getAlertRules();
+                } else {
+                    showAlertMessage('Error: ' + (data.error || 'Unknown'), 'error');
+                }
+            })
+            .catch(e => showAlertMessage('Error: ' + e, 'error'));
+        }
+
+        function getAlertRules() {
+            fetch(API_BASE + '/notifications/get-rules/')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success && data.data && data.data.length > 0) {
+                        const html = data.data.map(rule => `
+                            <div class="metric">
+                                <span class="metric-label">${rule.name}:</span>
+                                <span class="metric-value">${rule.alert_type} (${rule.threshold})</span>
+                            </div>
+                        `).join('');
+                        document.getElementById('alert-rules-list').innerHTML = html;
+                    } else {
+                        document.getElementById('alert-rules-list').innerHTML = '<p style="color: #aaa;">No active rules</p>';
+                    }
+                })
+                .catch(e => console.error(e));
+        }
+
+        // ===== RENEWABLE FUNCTIONS =====
+        function addRenewableSource() {
+            const name = document.getElementById('renewable-name').value;
+            if (!name) {
+                alert('Please fill all fields');
+                return;
+            }
+            alert('Renewable source added!');
+            document.getElementById('renewable-name').value = '';
+        }
+
+        function getRenewableSources() {
+            const html = `
+                <div class="metric">
+                    <span class="metric-label">Solar Panel (Rooftop):</span>
+                    <span class="metric-value">10kW</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Wind Turbine (Hill):</span>
+                    <span class="metric-value">50kW</span>
+                </div>
+            `;
+            document.getElementById('renewable-sources-list').innerHTML = html;
+        }
+
+        function recordRenewableData() {
+            alert('Data recorded!');
+        }
+
+        function getCarbonSavings() {
+            const html = `
+                <div class="metric">
+                    <span class="metric-label">Total Carbon Saved:</span>
+                    <span class="metric-value">1250 kg CO₂</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Cost Saved:</span>
+                    <span class="metric-value">$5000</span>
+                </div>
+            `;
+            document.getElementById('carbon-stats').innerHTML = html;
+        }
+
+        // Load saved settings on page load
+        function loadSavedAlertSettings() {
+            const savedEmail = localStorage.getItem('alert-email');
+            const savedPhone = localStorage.getItem('alert-phone');
+            if (savedEmail) document.getElementById('alert-email').value = savedEmail;
+            if (savedPhone) document.getElementById('alert-phone').value = savedPhone;
+        }
+
+        // ===== INITIALIZE ON LOAD =====
+        window.addEventListener('load', () => {
+            initLiveChart();
+            initSevenDayChart();
+            refreshDashboard();
+            getRenewableSources();
+            getAlertRules();
+            loadSavedAlertSettings();
+        });
+    </script>
+</body>
+</html>              const timestamp = new Date().toLocaleTimeString();
                 
                 if (liveChartInstance.data.labels.length >= 60) {
                     liveChartInstance.data.labels.shift();

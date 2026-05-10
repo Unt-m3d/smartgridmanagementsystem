@@ -47,10 +47,11 @@ urlpatterns = [
     path('renewable/carbon-savings/', renewable_views.get_carbon_savings, name='carbon-savings'),
     path('renewable/record-carbon/', renewable_views.record_carbon_savings, name='record-carbon'),
     
-    # Notifications
+    # Notifications - ✅ ALL ENDPOINTS
     path('notifications/register-contact/', notification_views.register_contact, name='register-contact'),
     path('notifications/create-rule/', notification_views.create_alert_rule, name='create-rule'),
     path('notifications/get-rules/', notification_views.get_alert_rules, name='get-rules'),
     path('notifications/test-email/', notification_views.test_email_alert, name='test-email'),
     path('notifications/test-sms/', notification_views.test_sms_alert, name='test-sms'),
+    path('notifications/send-bulk-email/', notification_views.send_bulk_email_alert, name='send-bulk-email'),
 ]

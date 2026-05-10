@@ -13,7 +13,7 @@ email_config = {
     'EMAIL_HOST_PASSWORD': os.getenv('EMAIL_HOST_PASSWORD'),
 }
 
-print("📧 Email Configuration:")
+print("Email Configuration:")
 print(f"  HOST: {email_config['EMAIL_HOST']}")
 print(f"  PORT: {email_config['EMAIL_PORT']}")
 print(f"  USER: {email_config['EMAIL_HOST_USER']}")
@@ -32,9 +32,9 @@ try:
     )
     connection = backend.open()
     if connection:
-        print("\n✅ Gmail connection successful!")
+        print("\nGmail connection successful!")
         backend.close()
     else:
-        print("\n❌ Gmail connection failed!")
+        print("\nGmail connection failed!")
 except Exception as e:
-    print(f"\n❌ Error: {str(e)}")
+    print(f"\nError: {str(e)}")

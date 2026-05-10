@@ -111,6 +111,11 @@
             transform: scale(0.98);
         }
         
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
         .btn-success {
             background: #10b981;
             color: white;
@@ -139,6 +144,12 @@
             border: 1px solid #ddd;
             border-radius: 6px;
             font-size: 1em;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
         
         .alert-badge {
@@ -187,6 +198,31 @@
             padding: 5px 10px;
             font-size: 0.8em;
             font-weight: bold;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 4px solid #f5c6cb;
+        }
+        
+        .info-text {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
         }
     </style>
 </head>
@@ -238,17 +274,22 @@
         <!-- Alert Configuration -->
         <div class="card">
             <h2>📧 Alert Settings</h2>
+            <div id="settingsMessage"></div>
+            
             <div class="input-group">
                 <label>Email:</label>
                 <input type="email" id="userEmail" placeholder="your-email@gmail.com">
+                <div class="info-text">We'll send alerts here when voltage changes</div>
             </div>
             <div class="input-group">
                 <label>Phone (SMS):</label>
-                <input type="tel" id="userPhone" placeholder="+1234567890">
+                <input type="tel" id="userPhone" placeholder="+1234567890 (optional)">
+                <div class="info-text">Requires Twilio setup (optional)</div>
             </div>
-            <button class="btn btn-primary" onclick="saveAlertSettings()">💾 Save Settings</button>
-            <button class="btn btn-primary" onclick="testEmail()">✉️ Test Email</button>
-            <button class="btn btn-primary" onclick="testSMS()">📱 Test SMS</button>
+            
+            <button class="btn btn-primary" onclick="saveAlertSettings()" id="saveBtn">💾 Save Settings</button>
+            <button class="btn btn-primary" onclick="testEmail()" id="testEmailBtn">✉️ Test Email</button>
+            <button class="btn btn-primary" onclick="testSMS()" id="testSMSBtn">📱 Test SMS</button>
         </div>
         
         <!-- Summary -->
@@ -269,6 +310,15 @@
     <script>
         const API_BASE = window.location.origin + '/api';
         let isOnline = false;
+        
+        // Show message
+        function showMessage(message, type = 'success') {
+            const msgDiv = document.getElementById('settingsMessage');
+            msgDiv.innerHTML = `<div class="${type}-message">${message}</div>`;
+            setTimeout(() => {
+                msgDiv.innerHTML = '';
+            }, 5000);
+        }
         
         // Check server status
         function checkStatus() {
@@ -359,45 +409,73 @@
                 .catch(e => console.error(e));
         }
         
-        // Alert settings
+        // Alert settings - SAVE CONTACT
         function saveAlertSettings() {
-            const email = document.getElementById('userEmail').value;
-            const phone = document.getElementById('userPhone').value;
+            const email = document.getElementById('userEmail').value.trim();
+            const phone = document.getElementById('userPhone').value.trim();
+            const btn = document.getElementById('saveBtn');
             
             if (!email) {
-                alert('❌ Email required');
+                showMessage('❌ Please enter your email address', 'error');
                 return;
             }
+            
+            // Basic email validation
+            if (!email.includes('@')) {
+                showMessage('❌ Please enter a valid email address', 'error');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ Saving...';
             
             fetch(`${API_BASE}/notifications/register-contact/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     user_email: email,
-                    user_phone: phone,
+                    user_phone: phone || '',
                     receive_email_alerts: true,
                     receive_sms_alerts: !!phone
                 })
             })
             .then(r => r.json())
             .then(data => {
+                btn.disabled = false;
+                btn.textContent = '💾 Save Settings';
+                
                 if (data.success) {
-                    alert('✅ Settings saved!');
+                    showMessage('✅ Settings saved successfully! You will receive alerts at ' + email, 'success');
                     localStorage.setItem('userEmail', email);
                     localStorage.setItem('userPhone', phone);
                 } else {
-                    alert('❌ Error: ' + (data.error || 'Unknown'));
+                    showMessage('❌ Error: ' + (data.error || 'Unknown error'), 'error');
                 }
             })
-            .catch(e => alert('❌ Error: ' + e));
+            .catch(e => {
+                btn.disabled = false;
+                btn.textContent = '💾 Save Settings';
+                showMessage('❌ Connection error: ' + e, 'error');
+            });
         }
         
+        // TEST EMAIL
         function testEmail() {
-            const email = document.getElementById('userEmail').value;
+            const email = document.getElementById('userEmail').value.trim();
+            const btn = document.getElementById('testEmailBtn');
+            
             if (!email) {
-                alert('❌ Enter email first');
+                showMessage('❌ Please enter your email first', 'error');
                 return;
             }
+            
+            if (!email.includes('@')) {
+                showMessage('❌ Please enter a valid email address', 'error');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ Sending...';
             
             fetch(`${API_BASE}/notifications/test-email/`, {
                 method: 'POST',
@@ -405,16 +483,35 @@
                 body: JSON.stringify({ email: email })
             })
             .then(r => r.json())
-            .then(data => alert('✅ ' + data.message))
-            .catch(e => alert('❌ Error: ' + e));
+            .then(data => {
+                btn.disabled = false;
+                btn.textContent = '✉️ Test Email';
+                
+                if (data.success) {
+                    showMessage('✅ ' + data.message + ' Check your inbox!', 'success');
+                } else {
+                    showMessage('❌ ' + (data.message || 'Failed to send email'), 'error');
+                }
+            })
+            .catch(e => {
+                btn.disabled = false;
+                btn.textContent = '✉️ Test Email';
+                showMessage('❌ Error: ' + e, 'error');
+            });
         }
         
+        // TEST SMS
         function testSMS() {
-            const phone = document.getElementById('userPhone').value;
+            const phone = document.getElementById('userPhone').value.trim();
+            const btn = document.getElementById('testSMSBtn');
+            
             if (!phone) {
-                alert('❌ Enter phone first');
+                showMessage('❌ Please enter your phone number first', 'error');
                 return;
             }
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ Sending...';
             
             fetch(`${API_BASE}/notifications/test-sms/`, {
                 method: 'POST',
@@ -422,8 +519,21 @@
                 body: JSON.stringify({ phone: phone })
             })
             .then(r => r.json())
-            .then(data => alert('✅ ' + data.message))
-            .catch(e => alert('❌ Error: ' + e));
+            .then(data => {
+                btn.disabled = false;
+                btn.textContent = '📱 Test SMS';
+                
+                if (data.success) {
+                    showMessage('✅ ' + data.message + ' Check your phone!', 'success');
+                } else {
+                    showMessage('❌ ' + (data.message || 'Failed to send SMS'), 'error');
+                }
+            })
+            .catch(e => {
+                btn.disabled = false;
+                btn.textContent = '📱 Test SMS';
+                showMessage('❌ Error: ' + e, 'error');
+            });
         }
         
         // Summary
@@ -437,8 +547,22 @@
                 .catch(e => console.error(e));
         }
         
+        // Load saved settings
+        function loadSavedSettings() {
+            const savedEmail = localStorage.getItem('userEmail');
+            const savedPhone = localStorage.getItem('userPhone');
+            
+            if (savedEmail) {
+                document.getElementById('userEmail').value = savedEmail;
+            }
+            if (savedPhone) {
+                document.getElementById('userPhone').value = savedPhone;
+            }
+        }
+        
         // Initialize
         window.addEventListener('load', () => {
+            loadSavedSettings();
             checkStatus();
             loadAlerts();
             setInterval(checkStatus, 5000); // Check every 5 seconds

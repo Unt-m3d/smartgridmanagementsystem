@@ -21,7 +21,7 @@ base_current = 5.0
 base_power = 1150
 
 for i in range(100):
-    timestamp = now - timedelta(seconds=i*72)  # Every 72 seconds
+    timestamp = now - timedelta(seconds=(100-i)*72)
     
     # Add some realistic variation
     voltage = base_voltage + random.uniform(-10, 10)
