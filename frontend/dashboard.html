@@ -329,7 +329,16 @@
         }
 
         .rule-icon {
-            font-size: 1.5em;
+            font-size: 1.2em;
+            font-weight: bold;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            color: #667eea;
         }
 
         .rule-name {
@@ -1024,14 +1033,14 @@
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    showAlertMessage('✅ Contact registered! You will receive alerts at ' + email.value, 'success');
+                    showAlertMessage('Contact registered! You will receive alerts at ' + email.value, 'success');
                     localStorage.setItem('alert-email', email.value);
                     localStorage.setItem('alert-phone', phone.value);
                 } else {
-                    showAlertMessage('❌ Error: ' + (data.error || 'Unknown error'), 'error');
+                    showAlertMessage('Error: ' + (data.error || 'Unknown error'), 'error');
                 }
             })
-            .catch(e => showAlertMessage('❌ Error: ' + (e.message || e), 'error'));
+            .catch(e => showAlertMessage('Error: ' + (e.message || e), 'error'));
         }
 
         function testEmail() {
@@ -1049,12 +1058,12 @@
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    showAlertMessage('✅ ' + (data.message || 'Email sent') + ' Check your inbox!', 'success');
+                    showAlertMessage((data.message || 'Email sent') + ' Check your inbox!', 'success');
                 } else {
-                    showAlertMessage('❌ ' + (data.message || 'Failed to send'), 'error');
+                    showAlertMessage((data.message || 'Failed to send'), 'error');
                 }
             })
-            .catch(e => showAlertMessage('❌ Error: ' + (e.message || e), 'error'));
+            .catch(e => showAlertMessage('Error: ' + (e.message || e), 'error'));
         }
 
         function testSMS() {
@@ -1072,12 +1081,12 @@
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    showAlertMessage('✅ ' + (data.message || 'SMS sent'), 'success');
+                    showAlertMessage((data.message || 'SMS sent'), 'success');
                 } else {
-                    showAlertMessage('❌ ' + (data.message || 'Failed to send'), 'error');
+                    showAlertMessage((data.message || 'Failed to send'), 'error');
                 }
             })
-            .catch(e => showAlertMessage('❌ Error: ' + (e.message || e), 'error'));
+            .catch(e => showAlertMessage('Error: ' + (e.message || e), 'error'));
         }
 
         // ===== ALERT RULES FUNCTIONS =====
@@ -1093,17 +1102,17 @@
                     rulesContainer.innerHTML = '';
                     
                     data.data.forEach(rule => {
-                        let iconEmoji = '⚠️';
+                        let iconText = 'ALERT';
                         let cardClass = '';
                         
                         if (rule.alert_type === 'voltage_high') {
-                            iconEmoji = '⬆️';
+                            iconText = 'HIGH';
                             cardClass = 'voltage-high';
                         } else if (rule.alert_type === 'voltage_low') {
-                            iconEmoji = '⬇️';
+                            iconText = 'LOW';
                             cardClass = 'voltage-low';
                         } else if (rule.alert_type === 'power_high') {
-                            iconEmoji = '🔥';
+                            iconText = 'POWER';
                             cardClass = 'power-high';
                         }
                         
@@ -1111,7 +1120,7 @@
                         ruleCard.className = `rule-card ${cardClass}`;
                         ruleCard.innerHTML = `
                             <div class="rule-header">
-                                <span class="rule-icon">${iconEmoji}</span>
+                                <span class="rule-icon">${iconText.substring(0, 1)}</span>
                                 <span class="rule-name">${rule.name}</span>
                                 <span class="rule-badge">ACTIVE</span>
                             </div>
@@ -1164,16 +1173,16 @@
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    showAlertMessage('✅ Alert rule "' + name.value + '" created successfully!', 'success');
+                    showAlertMessage('Alert rule "' + name.value + '" created successfully!', 'success');
                     name.value = '';
                     threshold.value = '';
                     document.getElementById('rule-type').value = 'voltage_high';
                     getAlertRules();
                 } else {
-                    showAlertMessage('❌ Error: ' + (data.error || 'Unknown error'), 'error');
+                    showAlertMessage('Error: ' + (data.error || 'Unknown error'), 'error');
                 }
             })
-            .catch(e => showAlertMessage('❌ Error: ' + (e.message || e), 'error'));
+            .catch(e => showAlertMessage('Error: ' + (e.message || e), 'error'));
         }
 
         // ===== RENEWABLE FUNCTIONS =====
@@ -1236,16 +1245,16 @@
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    showAlertMessage('✅ Renewable source added!', 'success');
+                    showAlertMessage('Renewable source added!', 'success');
                     document.getElementById('renewable-name').value = '';
                     document.getElementById('renewable-capacity').value = '';
                     document.getElementById('renewable-location').value = '';
                     getRenewableSources();
                 } else {
-                    showAlertMessage('❌ Error: ' + (data.error || 'Unknown error'), 'error');
+                    showAlertMessage('Error: ' + (data.error || 'Unknown error'), 'error');
                 }
             })
-            .catch(e => showAlertMessage('❌ Error: ' + e, 'error'));
+            .catch(e => showAlertMessage('Error: ' + e, 'error'));
         }
 
         function recordRenewableData() {
@@ -1270,14 +1279,14 @@
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    showAlertMessage('✅ Generation data recorded!', 'success');
+                    showAlertMessage('Generation data recorded!', 'success');
                     document.getElementById('renewable-power').value = '';
                     document.getElementById('renewable-efficiency').value = '';
                 } else {
-                    showAlertMessage('❌ Error: ' + (data.error || 'Unknown error'), 'error');
+                    showAlertMessage('Error: ' + (data.error || 'Unknown error'), 'error');
                 }
             })
-            .catch(e => showAlertMessage('❌ Error: ' + e, 'error'));
+            .catch(e => showAlertMessage('Error: ' + e, 'error'));
         }
 
         function getCarbonSavings() {
