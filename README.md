@@ -824,16 +824,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 📞 Support
+##  Support
 
 - **Documentation**: [View Full Docs](./docs/)
 - **Issues**: [GitHub Issues](https://github.com/Unt-m3d/smartgridmanagementsystem/issues)
-- **Email**: support@smartgrid.com
-- **Status**: [System Status](https://status.smartgrid.com)
+
 
 ---
 
-## 🎓 Learning Outcomes
+##  Learning Outcomes
 
 This project demonstrates:
 
