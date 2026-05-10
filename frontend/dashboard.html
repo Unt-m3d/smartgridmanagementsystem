@@ -300,6 +300,12 @@
             border-left-color: #ef4444;
         }
 
+        .warning-message {
+            background: rgba(249, 115, 22, 0.2);
+            color: #f97316;
+            border-left-color: #f97316;
+        }
+
         .rule-card {
             background: rgba(255,255,255,0.05);
             padding: 15px;
@@ -367,12 +373,56 @@
             font-size: 0.8em;
             margin-top: 8px;
         }
+
+        .active-alerts {
+            background: rgba(249, 115, 22, 0.1);
+            border: 1px solid rgba(249, 115, 22, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .active-alerts h3 {
+            color: #f97316;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .alert-item {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            border-left: 3px solid #f97316;
+            font-size: 0.9em;
+        }
+
+        .cost-section {
+            background: rgba(102, 126, 234, 0.15);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .cost-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .cost-value {
+            color: #10b981;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>Smart Grid Energy Management System</h1>
-        <p>Complete Energy Monitoring & Control Dashboard</p>
+        <p> Energy Monitoring & Control Dashboard</p>
         <div class="real-time-clock" id="realtimeClock">--:--:--</div>
         <div class="status-indicator" id="statusIndicator">Live Data</div>
     </div>
@@ -389,6 +439,14 @@
         
         <!-- ===== DASHBOARD TAB ===== -->
         <div id="dashboard" class="tab-content active">
+            <!-- Alert Notifications Section -->
+            <div id="dashboard-alerts" style="display: none;">
+                <div class="active-alerts">
+                    <h3>Active Alerts</h3>
+                    <div id="dashboard-alert-list"></div>
+                </div>
+            </div>
+
             <div class="grid">
                 <div class="card">
                     <h2>Real Time Status</h2>
@@ -430,6 +488,29 @@
                         <span class="metric-value" id="stat-points">672</span>
                     </div>
                     <button onclick="getStatistics()" style="margin-top: 20px; width: 100%;">Load Statistics</button>
+                </div>
+
+                <div class="card">
+                    <h2>Energy Cost Calculator</h2>
+                    <div class="cost-section">
+                        <h3>Daily Cost (KES)</h3>
+                        <div class="cost-value" id="daily-cost">0.00 KES</div>
+                        <div class="metric" style="border-bottom: none; padding: 5px 0;">
+                            <span class="metric-label">Rate:</span>
+                            <span class="metric-value">25 KES/kWh</span>
+                        </div>
+                    </div>
+                    <div class="cost-section">
+                        <h3>Monthly Cost (KES)</h3>
+                        <div class="cost-value" id="monthly-cost">0.00 KES</div>
+                    </div>
+                    <div class="cost-section">
+                        <h3>Energy Used</h3>
+                        <div class="metric" style="border-bottom: none;">
+                            <span class="metric-label">Today (kWh):</span>
+                            <span class="metric-value" id="daily-kwh">0.00</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -611,8 +692,9 @@
     </div>
 
     <script>
-        // ===== DEMO MODE - Generate realistic data =====
+        // ===== CONFIGURATION =====
         const API_BASE = window.location.origin + '/api';
+        const COST_PER_KWH = 25; // Kenya Shilling per kWh
         
         let isServerOnline = true;
         let liveChartInstance = null;
@@ -620,6 +702,7 @@
         let dailyChart = null;
         let hourlyChart = null;
         let predictionChartInstance = null;
+        let dailyEnergyUsed = 0; // in kWh
 
         // ===== REAL-TIME CLOCK =====
         function updateClock() {
@@ -639,15 +722,11 @@
             const hour = now.getHours();
             const minute = now.getMinutes();
             
-            // Peak during 8am-6pm, low at night
             const basePower = 2000 + Math.sin((hour - 8) * Math.PI / 12) * 2000;
             const fluctuation = Math.random() * 500 - 250;
             const power = Math.max(1000, basePower + fluctuation);
             
-            // Voltage around 230V with small variations
             const voltage = 230 + (Math.random() * 10 - 5);
-            
-            // Current = Power / Voltage
             const current = power / voltage;
             
             return {
@@ -655,6 +734,54 @@
                 voltage: voltage,
                 current: current
             };
+        }
+
+        // ===== ENERGY COST CALCULATION =====
+        function calculateEnergyCost(powerWatts) {
+            // Convert watts to kWh (power in watts / 1000 / 3600 seconds in hour)
+            const kwhPerSecond = powerWatts / 1000 / 3600;
+            const costPerSecond = kwhPerSecond * COST_PER_KWH;
+            return costPerSecond;
+        }
+
+        function updateEnergyCostDisplay() {
+            const avgPowerW = 2500; // Example average
+            const dailyEnergy = (avgPowerW / 1000) * 24; // kWh per day
+            const dailyCost = dailyEnergy * COST_PER_KWH;
+            const monthlyCost = dailyCost * 30;
+            
+            document.getElementById('daily-kwh').textContent = dailyEnergy.toFixed(2);
+            document.getElementById('daily-cost').textContent = dailyCost.toFixed(2) + ' KES';
+            document.getElementById('monthly-cost').textContent = monthlyCost.toFixed(2) + ' KES';
+        }
+
+        // ===== ALERT STATUS DISPLAY ON DASHBOARD =====
+        function updateDashboardAlerts() {
+            fetch(API_BASE + '/notifications/get-rules/', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.data && data.data.length > 0) {
+                    const alertsDiv = document.getElementById('dashboard-alerts');
+                    const alertList = document.getElementById('dashboard-alert-list');
+                    alertsDiv.style.display = 'block';
+                    alertList.innerHTML = '';
+                    
+                    data.data.forEach(rule => {
+                        const alertItem = document.createElement('div');
+                        alertItem.className = 'alert-item';
+                        alertItem.innerHTML = `
+                            <strong>${rule.name}</strong> - ${rule.alert_type.replace('_', ' ').toUpperCase()} (Threshold: ${rule.threshold})
+                        `;
+                        alertList.appendChild(alertItem);
+                    });
+                } else {
+                    document.getElementById('dashboard-alerts').style.display = 'none';
+                }
+            })
+            .catch(e => console.error('Error loading dashboard alerts:', e));
         }
 
         // ===== INIT LIVE CHART =====
@@ -709,7 +836,6 @@
                 }
             });
 
-            // Start updating live data
             setInterval(() => {
                 if (!liveChartInstance || !liveChartInstance.data) return;
                 
@@ -734,7 +860,6 @@
             
             if (sevenDayChartInstance) sevenDayChartInstance.destroy();
             
-            // Generate 7 days of data
             const labels = [];
             const avgData = [];
             const peakData = [];
@@ -744,7 +869,6 @@
                 date.setDate(date.getDate() - i);
                 labels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
                 
-                // Realistic patterns
                 avgData.push(2000 + Math.random() * 1000);
                 peakData.push(4000 + Math.random() * 1000);
             }
@@ -790,7 +914,7 @@
             });
         }
 
-        // ===== TAB SWITCHING (FIXED) =====
+        // ===== TAB SWITCHING =====
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
@@ -806,6 +930,8 @@
                 setTimeout(() => {
                     if (!liveChartInstance) initLiveChart();
                     if (!sevenDayChartInstance) initSevenDayChart();
+                    updateDashboardAlerts();
+                    updateEnergyCostDisplay();
                 }, 100);
             }
 
@@ -820,6 +946,7 @@
             document.getElementById('current-power').textContent = data.power.toFixed(2) + ' W';
             document.getElementById('current-voltage').textContent = data.voltage.toFixed(2) + ' V';
             document.getElementById('current-current').textContent = data.current.toFixed(2) + ' A';
+            updateEnergyCostDisplay();
         }
 
         function turnDeviceOn() {
@@ -836,13 +963,12 @@
             alert('Statistics Loaded!\n\nAvg Power: 2500 W\nPeak Power: 4800 W\nData Points: 672');
         }
 
-        // ===== GRAPH FUNCTIONS  =====
+        // ===== GRAPH FUNCTIONS =====
         function loadDailyTrends() {
             const ctx = document.getElementById('dailyTrendsChart');
             if (!ctx) return;
             if (dailyChart) dailyChart.destroy();
             
-            // Generate 30 days of data
             const labels = [];
             const avgData = [];
             const peakData = [];
@@ -901,7 +1027,6 @@
             if (!ctx) return;
             if (hourlyChart) hourlyChart.destroy();
             
-            // Generate 24 hours of data
             const labels = [];
             const data = [];
             
@@ -941,13 +1066,12 @@
             loadDailyTrends();
         }
 
-        // ===== PREDICTION FUNCTIONS (FIXED) =====
+        // ===== PREDICTION FUNCTIONS =====
         function loadPredictions() {
             const ctx = document.getElementById('predictionChart');
             if (!ctx) return;
             if (predictionChartInstance) predictionChartInstance.destroy();
             
-            // Generate 48 hours of predictions
             const labels = [];
             const predictions = [];
             const confidenceScores = [];
@@ -987,7 +1111,6 @@
                 }
             });
 
-            // Generate details table
             const detailsHtml = Array.from({length: 24}).map((_, i) => 
                 `<div class="metric">
                     <span class="metric-label">Hour ${String(i).padStart(2, '0')}:00</span>
@@ -999,7 +1122,7 @@
             alert('Predictions Loaded!');
         }
 
-        // ===== ALERT FUNCTIONS  =====
+        // ===== ALERT FUNCTIONS =====
         function showAlertMessage(message, type = 'success') {
             const msgDiv = document.getElementById('alertMessage');
             if (!msgDiv) return;
@@ -1178,6 +1301,7 @@
                     threshold.value = '';
                     document.getElementById('rule-type').value = 'voltage_high';
                     getAlertRules();
+                    updateDashboardAlerts();
                 } else {
                     showAlertMessage('Error: ' + (data.error || 'Unknown error'), 'error');
                 }
@@ -1327,6 +1451,8 @@
             refreshDashboard();
             getRenewableSources();
             getAlertRules();
+            updateDashboardAlerts();
+            updateEnergyCostDisplay();
         });
     </script>
 </body>
