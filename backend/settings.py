@@ -138,7 +138,7 @@ ALERT_SETTINGS = {
     'HIGH_POWER': 400,
 }
 
-# ✅ EMAIL CONFIGURATION - FIXED FOR GMAIL, OUTLOOK, SENDGRID
+#  EMAIL CONFIGURATION - FIXED FOR GMAIL, OUTLOOK, SENDGRID
 # Detect which email provider based on environment
 EMAIL_PROVIDER = os.environ.get('EMAIL_PROVIDER', 'gmail').lower()
 
@@ -205,7 +205,7 @@ if 'rediss://' in CELERY_BROKER_URL:
         'ssl_check_hostname': False,
     }
 
-# ✅ CELERY BEAT - Periodic Tasks Schedule (AI PREDICTIONS)
+#  CELERY BEAT - Periodic Tasks Schedule (AI PREDICTIONS)
 CELERY_BEAT_SCHEDULE = {
     'predict-energy-every-hour': {
         'task': 'energy.tasks.predict_future_energy',
@@ -225,7 +225,7 @@ CELERY_BEAT_SCHEDULE = {
 ML_MODELS_PATH = BASE_DIR / 'ml_models'
 os.makedirs(ML_MODELS_PATH, exist_ok=True)
 
-# ✅ LOGGING Configuration
+#  LOGGING Configuration
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

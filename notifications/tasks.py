@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 IS_WINDOWS = os.name == 'nt'
 
 
-# ✅ SEND EMAIL IMMEDIATELY (Works without Celery) - SINGLE OR MULTIPLE RECIPIENTS
+#  SEND EMAIL IMMEDIATELY (Works without Celery) - SINGLE OR MULTIPLE RECIPIENTS
 def send_email_alert(email, subject, message, html_message=None):
     """
     Send email immediately to single or multiple recipients
@@ -55,7 +55,7 @@ def send_email_alert(email, subject, message, html_message=None):
                 logger.error(f"Invalid email format: {email_addr}")
                 return False
         
-        email_icon = "[MAIL]" if IS_WINDOWS else "📧"
+        email_icon = "[MAIL]" if IS_WINDOWS else "gmail"
         recipients_str = ", ".join(recipient_list)
         logger.info(f"{email_icon} Sending email to {recipients_str}: {subject}")
         logger.debug(f"Email Backend: {settings.EMAIL_BACKEND}")
@@ -73,19 +73,19 @@ def send_email_alert(email, subject, message, html_message=None):
             fail_silently=False,
         )
         
-        check_icon = "[OK]" if IS_WINDOWS else "✅"
+        check_icon = "[OK]" if IS_WINDOWS else "yes"
         logger.info(f"{check_icon} Email sent successfully to {recipients_str}")
         return True
             
     except Exception as exc:
-        error_icon = "[ERROR]" if IS_WINDOWS else "❌"
+        error_icon = "[ERROR]" if IS_WINDOWS else "no"
         logger.error(f"{error_icon} Error sending email: {str(exc)}")
         import traceback
         logger.error(traceback.format_exc())
         return False
 
 
-# ✅ SEND EMAIL WITH ATTACHMENTS (NEW)
+# SEND EMAIL WITH ATTACHMENTS (NEW)
 def send_email_with_attachment(email, subject, message, attachment_file=None, html_message=None):
     """
     Send email with optional attachment
@@ -118,7 +118,7 @@ def send_email_with_attachment(email, subject, message, attachment_file=None, ht
             logger.error("EMAIL_HOST_USER not configured in settings")
             return False
         
-        email_icon = "[MAIL]" if IS_WINDOWS else "📧"
+        email_icon = "[MAIL]" if IS_WINDOWS else "gmail"
         recipients_str = ", ".join(recipient_list)
         logger.info(f"{email_icon} Sending email with attachment to {recipients_str}: {subject}")
         
@@ -143,19 +143,19 @@ def send_email_with_attachment(email, subject, message, attachment_file=None, ht
         
         msg.send(fail_silently=False)
         
-        check_icon = "[OK]" if IS_WINDOWS else "✅"
+        check_icon = "[OK]" if IS_WINDOWS else "yes"
         logger.info(f"{check_icon} Email with attachment sent to {recipients_str}")
         return True
             
     except Exception as exc:
-        error_icon = "[ERROR]" if IS_WINDOWS else "❌"
+        error_icon = "[ERROR]" if IS_WINDOWS else "no"
         logger.error(f"{error_icon} Error sending email: {str(exc)}")
         import traceback
         logger.error(traceback.format_exc())
         return False
 
 
-# ✅ SEND SMS IMMEDIATELY
+#  SEND SMS IMMEDIATELY
 def send_sms_alert(phone, message):
     """Send SMS immediately"""
     try:
@@ -175,7 +175,7 @@ def send_sms_alert(phone, message):
             logger.error("Phone number is empty")
             return False
         
-        sms_icon = "[SMS]" if IS_WINDOWS else "📱"
+        sms_icon = "[SMS]" if IS_WINDOWS else "sms"
         logger.info(f"{sms_icon} Sending SMS to {phone}")
         
         client = Client(twilio_account_sid, twilio_auth_token)
@@ -185,19 +185,19 @@ def send_sms_alert(phone, message):
             to=phone
         )
         
-        check_icon = "[OK]" if IS_WINDOWS else "✅"
+        check_icon = "[OK]" if IS_WINDOWS else "yes"
         logger.info(f"{check_icon} SMS sent successfully to {phone} (SID: {sms.sid})")
         return True
         
     except Exception as exc:
-        error_icon = "[ERROR]" if IS_WINDOWS else "❌"
+        error_icon = "[ERROR]" if IS_WINDOWS else "no"
         logger.error(f"{error_icon} Error sending SMS to {phone}: {str(exc)}")
         import traceback
         logger.error(traceback.format_exc())
         return False
 
 
-# ✅ ASYNC VERSION (for Celery - optional)
+# ASYNC VERSION (for Celery - optional)
 @shared_task(bind=True, max_retries=3)
 def send_email_alert_async(self, email, subject, message, html_message=None):
     """Send email asynchronously"""
@@ -225,7 +225,7 @@ def check_energy_alerts():
     from django.contrib.auth.models import User
     
     try:
-        search_icon = "[SEARCH]" if IS_WINDOWS else "🔍"
+        search_icon = "[SEARCH]" if IS_WINDOWS else "serching"
         logger.info(f"{search_icon} Checking energy alerts...")
         
         try:
@@ -265,7 +265,7 @@ def check_energy_alerts():
                             subject=f"ALERT: Smart Grid Alert: {alert['type']}",
                             message=alert['message']
                         )
-                    check_icon = "[OK]" if IS_WINDOWS else "✅"
+                    check_icon = "[OK]" if IS_WINDOWS else "yes"
                     logger.info(f"{check_icon} {len(alerts)} alerts sent to {len(user_emails)} users")
                     return True
                 else:
@@ -280,7 +280,7 @@ def check_energy_alerts():
         return True
         
     except Exception as e:
-        error_icon = "[ERROR]" if IS_WINDOWS else "❌"
+        error_icon = "[ERROR]" if IS_WINDOWS else "no"
         logger.error(f"{error_icon} Error in check_energy_alerts: {str(e)}")
         import traceback
         logger.error(traceback.format_exc())

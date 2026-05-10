@@ -80,7 +80,6 @@ def test_email_alert(request):
             }, status=status.HTTP_400_BAD_REQUEST)
         
         # Support both single email string and list of emails
-        # Format: {"email": "test@gmail.com"} or {"email": ["test1@gmail.com", "test2@yahoo.com"]}
         
         result = send_email_alert(
             email=email,
@@ -90,7 +89,7 @@ def test_email_alert(request):
             <html>
                 <body style="font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 20px;">
                     <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        <h2 style="color: #333;">🔌 Smart Grid Test Alert</h2>
+                        <h2 style="color: #333;">Smart Grid Test Alert</h2>
                         <p style="color: #666; font-size: 14px;">If you received this email, your notification system is working correctly!</p>
                         <div style="background-color: #e8f4f8; padding: 15px; border-left: 4px solid #0099cc; margin-top: 20px;">
                             <p style="margin: 0; color: #0099cc;"><strong>Email notifications are ENABLED</strong></p>

@@ -29,7 +29,7 @@ class EnergySimulator:
         self.running = False
         if self.thread:
             self.thread.join()
-        logger.info("⚡ Energy simulator stopped")
+        logger.info("Energy simulator stopped")
     
     def _run(self):
         """Main simulation loop"""

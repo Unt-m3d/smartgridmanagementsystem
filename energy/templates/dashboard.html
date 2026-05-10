@@ -113,13 +113,13 @@ canvas {
 
 <body>
 
-<h2>⚡ Smart Grid Energy Control System</h2>
+<h2>Smart Grid Energy Control System</h2>
 
 <div class="container">
 
     <!-- DEVICE CONTROL -->
     <div class="card">
-        <h3>🔌 Device Control</h3>
+        <h3>Device Control</h3>
         <button class="on" onclick="turnOn()">ON</button>
         <button class="off" onclick="turnOff()">OFF</button>
         <p>Status: <span id="status" class="status-badge">Loading...</span></p>
@@ -127,7 +127,7 @@ canvas {
 
     <!-- ENERGY -->
     <div class="card">
-        <h3>⚡ Energy</h3>
+        <h3>Energy</h3>
         <p>Energy Used</p>
         <div class="value"><span id="energy">0</span> kWh</div>
 
@@ -137,7 +137,7 @@ canvas {
 
     <!-- LIVE DATA -->
     <div class="card">
-        <h3>📊 Live Data</h3>
+        <h3>Live Data</h3>
         <p class="power">Power: <span id="power">0</span> W</p>
         <p class="voltage">Voltage: <span id="voltage">0</span> V</p>
         <p class="current">Current: <span id="current">0</span> A</p>
@@ -145,13 +145,13 @@ canvas {
 
     <!-- ALERTS -->
     <div class="card" id="alertBox">
-        <h3>🚨 System Alerts</h3>
+        <h3>System Alerts</h3>
         <p id="alertMessage">No alerts</p>
     </div>
 
     <!-- GRAPH -->
     <div class="card" style="grid-column: span 2;">
-        <h3>📈 Real-Time Monitoring</h3>
+        <h3>Real-Time Monitoring</h3>
         <canvas id="chart"></canvas>
     </div>
 
@@ -201,10 +201,10 @@ function playBeep() {
 function checkAlerts(power, voltage, current, deviceOn) {
     let alerts = [];
 
-    if (voltage > 240) alerts.push("⚠️ High Voltage!");
-    if (current > 2) alerts.push("⚠️ High Current!");
-    if (power > 400) alerts.push("⚠️ High Power Consumption!");
-    if (!deviceOn && power > 0) alerts.push("⚠️ Power flowing while device OFF!");
+    if (voltage > 240) alerts.push("High Voltage!");
+    if (current > 2) alerts.push("High Current!");
+    if (power > 400) alerts.push("High Power Consumption!");
+    if (!deviceOn && power > 0) alerts.push("Power flowing while device OFF!");
 
     const alertBox = document.getElementById("alertBox");
     const alertMsg = document.getElementById("alertMessage");
@@ -217,7 +217,7 @@ function checkAlerts(power, voltage, current, deviceOn) {
     } else {
         alertBox.style.display = "block";
         alertBox.classList.add("alert-safe");
-        alertMsg.innerHTML = "✅ System Normal";
+        alertMsg.innerHTML = "System Normal";
     }
 }
 

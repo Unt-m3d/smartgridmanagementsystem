@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ Smart Grid - All Features</title>
+    <title>Smart Grid - All Features</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
@@ -280,22 +280,41 @@
             font-size: 1.2em;
             font-weight: bold;
         }
+
+        .alert-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid;
+        }
+
+        .success-message {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border-left-color: #10b981;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border-left-color: #ef4444;
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>⚡ Smart Grid Management System</h1>
+        <h1>Smart Grid Energy Management System</h1>
         <p>Complete Energy Monitoring & Control Dashboard</p>
         <div class="real-time-clock" id="realtimeClock">--:--:--</div>
-        <div class="status-indicator" id="statusIndicator">🟢 Demo Mode - Live Data</div>
+        <div class="status-indicator" id="statusIndicator">Live Data</div>
     </div>
 
     <div class="nav-tabs">
-        <button class="active" onclick="switchTab('dashboard')">📊 Dashboard</button>
-        <button onclick="switchTab('graphs')">📈 Graphs</button>
-        <button onclick="switchTab('prediction')">🤖 Predictions</button>
-        <button onclick="switchTab('alerts')">🔔 Alerts</button>
-        <button onclick="switchTab('renewable')">☀️ Renewable</button>
+        <button class="active" onclick="switchTab('dashboard')">Dashboard</button>
+        <button onclick="switchTab('graphs')">Graphs</button>
+        <button onclick="switchTab('prediction')">Predictions</button>
+        <button onclick="switchTab('alerts')">Alerts</button>
+        <button onclick="switchTab('renewable')">Renewable</button>
     </div>
 
     <div class="container">
@@ -304,7 +323,7 @@
         <div id="dashboard" class="tab-content active">
             <div class="grid">
                 <div class="card">
-                    <h2>⚡ Real-Time Status</h2>
+                    <h2>Real Time Status</h2>
                     <div class="metric">
                         <span class="metric-label">Current Power:</span>
                         <span class="metric-value" id="current-power">0 W</span>
@@ -322,14 +341,14 @@
                         <span class="metric-value" id="device-status">ON</span>
                     </div>
                     <div style="margin-top: 20px;">
-                        <button onclick="turnDeviceOn()">✅ Turn ON</button>
-                        <button onclick="turnDeviceOff()">❌ Turn OFF</button>
-                        <button onclick="refreshDashboard()">🔄 Refresh</button>
+                        <button onclick="turnDeviceOn()">Turn ON</button>
+                        <button onclick="turnDeviceOff()">Turn OFF</button>
+                        <button onclick="refreshDashboard()">Refresh</button>
                     </div>
                 </div>
 
                 <div class="card">
-                    <h2>📊 Statistics (7 Days)</h2>
+                    <h2>Statistics (7 Days)</h2>
                     <div class="metric">
                         <span class="metric-label">Avg Power:</span>
                         <span class="metric-value" id="stat-avg">2500 W</span>
@@ -342,13 +361,13 @@
                         <span class="metric-label">Data Points:</span>
                         <span class="metric-value" id="stat-points">672</span>
                     </div>
-                    <button onclick="getStatistics()" style="margin-top: 20px; width: 100%;">📊 Load Statistics</button>
+                    <button onclick="getStatistics()" style="margin-top: 20px; width: 100%;">Load Statistics</button>
                 </div>
             </div>
 
             <!-- Real-Time Graph Below -->
             <div class="live-graph-container">
-                <h2>📊 Real-Time Power Graph (Live Updates)</h2>
+                <h2>Real-Time Power Graph (Live Updates)</h2>
                 <div class="chart-container">
                     <canvas id="liveChart"></canvas>
                 </div>
@@ -356,7 +375,7 @@
 
             <!-- 7-Day Trend Graph -->
             <div class="live-graph-container" style="margin-top: 20px;">
-                <h2>📈 7-Day Energy Trend</h2>
+                <h2>7-Day Energy Trend</h2>
                 <div class="chart-container">
                     <canvas id="sevenDayChart"></canvas>
                 </div>
@@ -367,20 +386,20 @@
         <div id="graphs" class="tab-content">
             <div class="grid full-width">
                 <div class="card full-width">
-                    <h2>📈 Daily Energy Trends (Last 30 Days)</h2>
+                    <h2>Daily Energy Trends (Last 30 Days)</h2>
                     <div class="chart-container">
                         <canvas id="dailyTrendsChart"></canvas>
                     </div>
-                    <button onclick="loadDailyTrends()">📊 Load Daily Trends</button>
-                    <button onclick="calculateTrends()">🔢 Calculate Today</button>
+                    <button onclick="loadDailyTrends()">Load Daily Trends</button>
+                    <button onclick="calculateTrends()">Calculate Today</button>
                 </div>
 
                 <div class="card full-width">
-                    <h2>⏰ Hourly Energy Trends (Last 24 Hours)</h2>
+                    <h2>Hourly Energy Trends (Last 24 Hours)</h2>
                     <div class="chart-container">
                         <canvas id="hourlyTrendsChart"></canvas>
                     </div>
-                    <button onclick="loadHourlyTrends()">📊 Load Hourly Data</button>
+                    <button onclick="loadHourlyTrends()">Load Hourly Data</button>
                 </div>
             </div>
         </div>
@@ -389,15 +408,15 @@
         <div id="prediction" class="tab-content">
             <div class="grid full-width">
                 <div class="card full-width">
-                    <h2>🤖 AI Energy Predictions (Next 48 Hours)</h2>
+                    <h2>AI Energy Predictions (Next 48 Hours)</h2>
                     <div class="chart-container">
                         <canvas id="predictionChart"></canvas>
                     </div>
-                    <button onclick="loadPredictions()">🔮 Load Predictions</button>
+                    <button onclick="loadPredictions()">Load Predictions</button>
                 </div>
 
                 <div class="card full-width">
-                    <h2>📋 Prediction Details</h2>
+                    <h2>Prediction Details</h2>
                     <div id="prediction-details"></div>
                 </div>
             </div>
@@ -405,9 +424,11 @@
 
         <!-- ===== ALERTS TAB ===== -->
         <div id="alerts" class="tab-content">
+            <div id="alertMessage"></div>
+            
             <div class="grid">
                 <div class="card">
-                    <h2>📝 Register Contact</h2>
+                    <h2>Register Contact</h2>
                     
                     <label>Email Address:</label>
                     <input type="email" id="alert-email" placeholder="your-email@example.com">
@@ -425,36 +446,36 @@
                         <label for="sms-alerts" style="margin: 0;">Receive SMS Alerts</label>
                     </div>
                     
-                    <button onclick="registerContact()" style="width: 100%; margin-top: 15px;">📝 Register Contact</button>
-                    <button onclick="testEmail()" style="width: 100%;">✉️ Test Email</button>
-                    <button onclick="testSMS()" style="width: 100%;">📱 Test SMS</button>
+                    <button onclick="registerContact()" style="width: 100%; margin-top: 15px;">Register Contact</button>
+                    <button onclick="testEmail()" style="width: 100%;">Test Email</button>
+                    <button onclick="testSMS()" style="width: 100%;">Test SMS</button>
                 </div>
 
                 <div class="card">
-                    <h2>⚙️ Create Alert Rule</h2>
+                    <h2>Create Alert Rule</h2>
                     
                     <label>Rule Name:</label>
                     <input type="text" id="rule-name" placeholder="e.g., High Voltage Alert">
                     
                     <label>Alert Type:</label>
                     <select id="rule-type">
-                        <option value="voltage_high">⚠️ High Voltage (>250V)</option>
-                        <option value="voltage_low">⚠️ Low Voltage (<200V)</option>
-                        <option value="power_high">⚠️ High Power (>5000W)</option>
+                        <option value="voltage_high">High Voltage (>250V)</option>
+                        <option value="voltage_low">Low Voltage (<200V)</option>
+                        <option value="power_high">High Power (>5000W)</option>
                     </select>
                     
                     <label>Threshold Value:</label>
                     <input type="number" id="rule-threshold" placeholder="250" step="0.01">
                     
-                    <button onclick="createAlertRule()" style="width: 100%; margin-top: 15px;">➕ Create Rule</button>
+                    <button onclick="createAlertRule()" style="width: 100%; margin-top: 15px;">Create Rule</button>
                 </div>
             </div>
 
             <div class="grid full-width">
                 <div class="card full-width">
-                    <h2>📋 Active Alert Rules</h2>
+                    <h2>Active Alert Rules</h2>
                     <div id="alert-rules-list"></div>
-                    <button onclick="getAlertRules()" style="width: 100%;">🔄 Refresh Rules</button>
+                    <button onclick="getAlertRules()" style="width: 100%;">Refresh Rules</button>
                 </div>
             </div>
         </div>
@@ -463,7 +484,7 @@
         <div id="renewable" class="tab-content">
             <div class="grid">
                 <div class="card">
-                    <h2>☀️ Add Renewable Source</h2>
+                    <h2>Add Renewable Source</h2>
                     
                     <label>Source Name:</label>
                     <input type="text" id="renewable-name" placeholder="e.g., Rooftop Solar">
@@ -482,11 +503,11 @@
                     <label>Location:</label>
                     <input type="text" id="renewable-location" placeholder="e.g., Building A">
                     
-                    <button onclick="addRenewableSource()" style="width: 100%; margin-top: 15px;">➕ Add Source</button>
+                    <button onclick="addRenewableSource()" style="width: 100%; margin-top: 15px;">Add Source</button>
                 </div>
 
                 <div class="card">
-                    <h2>⚡ Record Generation</h2>
+                    <h2>Record Generation</h2>
                     
                     <label>Select Source:</label>
                     <select id="renewable-source-id"></select>
@@ -497,24 +518,24 @@
                     <label>Efficiency (%):</label>
                     <input type="number" id="renewable-efficiency" placeholder="85" min="0" max="100" step="0.1">
                     
-                    <button onclick="recordRenewableData()" style="width: 100%; margin-top: 15px;">📝 Record Data</button>
+                    <button onclick="recordRenewableData()" style="width: 100%; margin-top: 15px;">Record Data</button>
                 </div>
             </div>
 
             <div class="grid full-width">
                 <div class="card full-width">
-                    <h2>🌍 Renewable Sources</h2>
+                    <h2>Renewable Sources</h2>
                     <div id="renewable-sources-list"></div>
-                    <button onclick="getRenewableSources()" style="width: 100%;">🔄 Refresh Sources</button>
+                    <button onclick="getRenewableSources()" style="width: 100%;">Refresh Sources</button>
                 </div>
 
                 <div class="card full-width">
-                    <h2>📊 Carbon Savings & Metrics</h2>
+                    <h2>Carbon Savings & Metrics</h2>
                     <div class="chart-container">
                         <canvas id="carbonChart"></canvas>
                     </div>
                     <div id="carbon-stats" class="stats-box"></div>
-                    <button onclick="getCarbonSavings()">📊 Load Carbon Data</button>
+                    <button onclick="getCarbonSavings()">Load Carbon Data</button>
                 </div>
             </div>
         </div>
@@ -622,6 +643,8 @@
 
             // Start updating live data
             setInterval(() => {
+                if (!liveChartInstance || !liveChartInstance.data) return;
+                
                 const data = generatePowerData();
                 const timestamp = new Date().toLocaleTimeString();
                 
@@ -699,7 +722,7 @@
             });
         }
 
-        // ===== TAB SWITCHING =====
+        // ===== TAB SWITCHING (FIXED) =====
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
@@ -729,21 +752,22 @@
 
         function turnDeviceOn() {
             document.getElementById('device-status').textContent = 'ON';
-            alert('✅ Device turned ON');
+            alert('Device turned ON');
         }
 
         function turnDeviceOff() {
             document.getElementById('device-status').textContent = 'OFF';
-            alert('✅ Device turned OFF');
+            alert('Device turned OFF');
         }
 
         function getStatistics() {
-            alert('✅ Statistics Loaded!\n\nAvg Power: 2500 W\nPeak Power: 4800 W\nData Points: 672');
+            alert('Statistics Loaded!\n\nAvg Power: 2500 W\nPeak Power: 4800 W\nData Points: 672');
         }
 
-        // ===== GRAPH FUNCTIONS =====
+        // ===== GRAPH FUNCTIONS  =====
         function loadDailyTrends() {
-            const ctx = document.getElementById('dailyTrendsChart').getContext('2d');
+            const ctx = document.getElementById('dailyTrendsChart');
+            if (!ctx) return;
             if (dailyChart) dailyChart.destroy();
             
             // Generate 30 days of data
@@ -797,11 +821,12 @@
                     }
                 }
             });
-            alert('✅ Daily Trends Loaded!');
+            alert('Daily Trends Loaded!');
         }
 
         function loadHourlyTrends() {
-            const ctx = document.getElementById('hourlyTrendsChart').getContext('2d');
+            const ctx = document.getElementById('hourlyTrendsChart');
+            if (!ctx) return;
             if (hourlyChart) hourlyChart.destroy();
             
             // Generate 24 hours of data
@@ -836,17 +861,18 @@
                     }
                 }
             });
-            alert('✅ Hourly Trends Loaded!');
+            alert('Hourly Trends Loaded!');
         }
 
         function calculateTrends() {
-            alert('✅ Trends Calculated!');
+            alert('Trends Calculated!');
             loadDailyTrends();
         }
 
-        // ===== PREDICTION FUNCTIONS =====
+        // ===== PREDICTION FUNCTIONS (FIXED) =====
         function loadPredictions() {
-            const ctx = document.getElementById('predictionChart').getContext('2d');
+            const ctx = document.getElementById('predictionChart');
+            if (!ctx) return;
             if (predictionChartInstance) predictionChartInstance.destroy();
             
             // Generate 48 hours of predictions
@@ -898,91 +924,294 @@
             ).join('');
             document.getElementById('prediction-details').innerHTML = detailsHtml;
             
-            alert('✅ Predictions Loaded!');
+            alert('Predictions Loaded!');
         }
 
-        // ===== ALERT FUNCTIONS =====
+        // ===== ALERT FUNCTIONS  =====
+        function showAlertMessage(message, type = 'success') {
+            const msgDiv = document.getElementById('alertMessage');
+            if (!msgDiv) return;
+            msgDiv.innerHTML = `<div class="alert-message ${type}-message">${message}</div>`;
+            setTimeout(() => {
+                msgDiv.innerHTML = '';
+            }, 5000);
+        }
+
         function registerContact() {
-            const email = document.getElementById('alert-email').value;
-            if (!email) {
-                alert('❌ Please enter email');
+            const email = document.getElementById('alert-email');
+            const phone = document.getElementById('alert-phone');
+            const emailAlerts = document.getElementById('email-alerts');
+            const smsAlerts = document.getElementById('sms-alerts');
+            
+            if (!email || !email.value.trim()) {
+                showAlertMessage('Please enter email', 'error');
                 return;
             }
-            alert('✅ Contact registered!');
+            
+            fetch(API_BASE + '/notifications/register-contact/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_email: email.value.trim(),
+                    user_phone: phone?.value?.trim() || '',
+                    receive_email_alerts: emailAlerts?.checked || false,
+                    receive_sms_alerts: smsAlerts?.checked || false
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showAlertMessage('Contact registered! You will receive alerts at ' + email.value, 'success');
+                    localStorage.setItem('alert-email', email.value);
+                    localStorage.setItem('alert-phone', phone.value);
+                } else {
+                    showAlertMessage('Error: ' + (data.error || 'Unknown error'), 'error');
+                }
+            })
+            .catch(e => showAlertMessage('Error: ' + (e.message || e), 'error'));
         }
 
         function testEmail() {
-            alert('✅ Test email sent!');
+            const emailEl = document.getElementById('alert-email');
+            if (!emailEl || !emailEl.value.trim()) {
+                showAlertMessage('Please enter email first', 'error');
+                return;
+            }
+            
+            fetch(API_BASE + '/notifications/test-email/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: emailEl.value.trim() })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showAlertMessage((data.message || 'Email sent') + ' Check your inbox!', 'success');
+                } else {
+                    showAlertMessage((data.message || 'Failed to send'), 'error');
+                }
+            })
+            .catch(e => showAlertMessage('Error: ' + (e.message || e), 'error'));
         }
 
         function testSMS() {
-            alert('✅ Test SMS sent!');
+            const phoneEl = document.getElementById('alert-phone');
+            if (!phoneEl || !phoneEl.value.trim()) {
+                showAlertMessage('Please enter phone first', 'error');
+                return;
+            }
+            
+            fetch(API_BASE + '/notifications/test-sms/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: phoneEl.value.trim() })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showAlertMessage((data.message || 'SMS sent') + ' Check your messages!', 'success');
+                } else {
+                    showAlertMessage((data.message || 'Failed to send'), 'error');
+                }
+            })
+            .catch(e => showAlertMessage('Error: ' + (e.message || e), 'error'));
         }
 
         function createAlertRule() {
-            const name = document.getElementById('rule-name').value;
-            if (!name) {
-                alert('❌ Please enter rule name');
+            const nameEl = document.getElementById('rule-name');
+            const typeEl = document.getElementById('rule-type');
+            const thresholdEl = document.getElementById('rule-threshold');
+            
+            if (!nameEl || !nameEl.value.trim()) {
+                showAlertMessage('Please enter rule name', 'error');
                 return;
             }
-            alert('✅ Alert rule created!');
+            
+            fetch(API_BASE + '/notifications/create-rule/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: nameEl.value.trim(),
+                    alert_type: typeEl?.value || 'voltage_high',
+                    threshold: parseFloat(thresholdEl?.value) || 250
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showAlertMessage('Alert rule created!', 'success');
+                    nameEl.value = '';
+                    thresholdEl.value = '';
+                    getAlertRules();
+                } else {
+                    showAlertMessage('Error: ' + (data.error || 'Unknown error'), 'error');
+                }
+            })
+            .catch(e => showAlertMessage('Error: ' + (e.message || e), 'error'));
         }
 
         function getAlertRules() {
-            const html = `
-                <div class="metric">
-                    <span class="metric-label">High Voltage Alert:</span>
-                    <span class="metric-value">Active (>250V)</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Low Voltage Alert:</span>
-                    <span class="metric-value">Active (<200V)</span>
-                </div>
-            `;
-            document.getElementById('alert-rules-list').innerHTML = html;
+            fetch(API_BASE + '/notifications/get-rules/')
+            .then(r => r.json())
+            .then(data => {
+                const rulesList = document.getElementById('alert-rules-list');
+                if (rulesList) {
+                    if (data.success && data.data && data.data.length > 0) {
+                        const html = data.data.map(rule => `
+                            <div class="metric">
+                                <span class="metric-label">${rule.name || 'Unknown'}:</span>
+                                <span class="metric-value">${rule.is_active ? 'Active' : 'Inactive'}</span>
+                            </div>
+                        `).join('');
+                        rulesList.innerHTML = html;
+                    } else {
+                        rulesList.innerHTML = '<div class="stats-box">No alert rules configured.</div>';
+                    }
+                }
+            })
+            .catch(e => {
+                const rulesList = document.getElementById('alert-rules-list');
+                if (rulesList) {
+                    rulesList.innerHTML = '<div class="stats-box" style="color: #ef4444;">Error loading rules</div>';
+                }
+            });
         }
 
-        // ===== RENEWABLE FUNCTIONS =====
+        // ===== RENEWABLE FUNCTIONS (FIXED) =====
         function addRenewableSource() {
-            const name = document.getElementById('renewable-name').value;
-            if (!name) {
-                alert('❌ Please fill all fields');
+            const nameEl = document.getElementById('renewable-name');
+            const typeEl = document.getElementById('renewable-type');
+            const capacityEl = document.getElementById('renewable-capacity');
+            const locationEl = document.getElementById('renewable-location');
+            
+            if (!nameEl || !nameEl.value.trim() || !typeEl || !capacityEl || !locationEl) {
+                showAlertMessage('Please fill all renewable source fields', 'error');
                 return;
             }
-            alert('✅ Renewable source added!');
-            document.getElementById('renewable-name').value = '';
+            
+            fetch(API_BASE + '/renewable/add-source/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: nameEl.value.trim(),
+                    source_type: typeEl.value,
+                    capacity: parseFloat(capacityEl.value),
+                    location: locationEl.value.trim(),
+                    is_active: true
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showAlertMessage('Renewable source added!', 'success');
+                    nameEl.value = '';
+                    capacityEl.value = '';
+                    locationEl.value = '';
+                    getRenewableSources();
+                } else {
+                    showAlertMessage('Error: ' + (data.error || 'Unknown error'), 'error');
+                }
+            })
+            .catch(e => showAlertMessage('Error: ' + (e.message || e), 'error'));
         }
 
         function getRenewableSources() {
-            const html = `
-                <div class="metric">
-                    <span class="metric-label">Solar Panel (Rooftop):</span>
-                    <span class="metric-value">10kW</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Wind Turbine (Hill):</span>
-                    <span class="metric-value">50kW</span>
-                </div>
-            `;
-            document.getElementById('renewable-sources-list').innerHTML = html;
+            fetch(API_BASE + '/renewable/sources/')
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.data && data.data.length > 0) {
+                    const html = data.data.map(source => `
+                        <div class="metric">
+                            <span class="metric-label">${source.name || 'Unknown'} (${source.source_type || 'N/A'}):</span>
+                            <span class="metric-value">${source.capacity || 0}kW</span>
+                        </div>
+                    `).join('');
+                    const reneList = document.getElementById('renewable-sources-list');
+                    if (reneList) reneList.innerHTML = html;
+                    
+                    const dropdown = document.getElementById('renewable-source-id');
+                    if (dropdown) {
+                        dropdown.innerHTML = '<option>-- Select a Source --</option>' + data.data.map(source => 
+                            `<option value="${source.id}">${source.name}</option>`
+                        ).join('');
+                    }
+                } else {
+                    const reneList = document.getElementById('renewable-sources-list');
+                    if (reneList) reneList.innerHTML = '<div class="stats-box">No renewable sources available. Add one first!</div>';
+                    const dropdown = document.getElementById('renewable-source-id');
+                    if (dropdown) dropdown.innerHTML = '<option>No sources available</option>';
+                }
+            })
+            .catch(e => {
+                const reneList = document.getElementById('renewable-sources-list');
+                if (reneList) reneList.innerHTML = '<div class="stats-box" style="color: #ef4444;">Error loading sources</div>';
+            });
         }
 
         function recordRenewableData() {
-            alert('✅ Data recorded!');
+            const sourceIdEl = document.getElementById('renewable-source-id');
+            const powerEl = document.getElementById('renewable-power');
+            const efficiencyEl = document.getElementById('renewable-efficiency');
+            
+            if (!sourceIdEl || !sourceIdEl.value || !powerEl || !powerEl.value || !efficiencyEl || !efficiencyEl.value) {
+                showAlertMessage('Please fill all renewable data fields', 'error');
+                return;
+            }
+            
+            fetch(API_BASE + '/renewable/record-data/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    source: parseInt(sourceIdEl.value),
+                    power_generated: parseFloat(powerEl.value),
+                    efficiency: parseFloat(efficiencyEl.value)
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showAlertMessage('Data recorded!', 'success');
+                    powerEl.value = '';
+                    efficiencyEl.value = '';
+                } else {
+                    showAlertMessage('Error: ' + (data.error || 'Unknown error'), 'error');
+                }
+            })
+            .catch(e => showAlertMessage('Error: ' + (e.message || e), 'error'));
         }
 
         function getCarbonSavings() {
-            const html = `
-                <div class="metric">
-                    <span class="metric-label">Total Carbon Saved:</span>
-                    <span class="metric-value">1250 kg CO₂</span>
-                </div>
-                <div class="metric">
-                    <span class="metric-label">Cost Saved:</span>
-                    <span class="metric-value">$5000</span>
-                </div>
-            `;
-            document.getElementById('carbon-stats').innerHTML = html;
+            fetch(API_BASE + '/renewable/carbon-savings/')
+            .then(r => r.json())
+            .then(data => {
+                const carbonStats = document.getElementById('carbon-stats');
+                if (carbonStats) {
+                    if (data.success && data.totals) {
+                        const totals = data.totals;
+                        const html = `
+                            <div class="metric">
+                                <span class="metric-label">Total Renewable Energy:</span>
+                                <span class="metric-value">${(totals.renewable_energy_kwh || 0).toFixed(2)} kWh</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Total Carbon Saved:</span>
+                                <span class="metric-value">${(totals.carbon_saved_kg || 0).toFixed(2)} kg CO₂</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Cost Saved:</span>
+                                <span class="metric-value">$${(totals.cost_saved || 0).toFixed(2)}</span>
+                            </div>
+                        `;
+                        carbonStats.innerHTML = html;
+                    } else {
+                        carbonStats.innerHTML = '<div class="stats-box">No carbon savings data available</div>';
+                    }
+                }
+            })
+            .catch(e => {
+                const carbonStats = document.getElementById('carbon-stats');
+                if (carbonStats) carbonStats.innerHTML = '<div class="stats-box" style="color: #ef4444;">Error loading carbon data</div>';
+            });
         }
 
         // ===== INITIALIZE ON LOAD =====

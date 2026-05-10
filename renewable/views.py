@@ -129,7 +129,7 @@ def get_renewable_percentage(request):
         total_renewable_kwh = renewable_data.aggregate(Sum('renewable_energy_kwh'))['renewable_energy_kwh__sum'] or 0
         
         # Calculate percentage (assuming you have total energy somewhere)
-        # This is a basic example - adjust based on your data structure
+        # This is a basic example - adjusted based on  data structure
         renewable_percentage = total_renewable_kwh / (total_renewable_kwh + 1) * 100 if total_renewable_kwh > 0 else 0
         
         logger.info(f"Retrieved renewable percentage: {renewable_percentage}%")

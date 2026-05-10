@@ -5,7 +5,7 @@ from renewable import views as renewable_views
 from notifications import views as notification_views
 
 urlpatterns = [
-    # ✅ LEGACY ENDPOINTS (for backward compatibility with frontend & simulators)
+    # LEGACY ENDPOINTS (for backward compatibility with frontend & simulators)
     path('data/', energy_views.get_data, name='data-all-legacy'),
     path('status/', energy_views.get_status, name='status-legacy'),
     path('turn-on/', energy_views.turn_on, name='turn-on-legacy'),
@@ -47,7 +47,7 @@ urlpatterns = [
     path('renewable/carbon-savings/', renewable_views.get_carbon_savings, name='carbon-savings'),
     path('renewable/record-carbon/', renewable_views.record_carbon_savings, name='record-carbon'),
     
-    # Notifications - ✅ ALL ENDPOINTS
+    # Notifications - ALL ENDPOINTS
     path('notifications/register-contact/', notification_views.register_contact, name='register-contact'),
     path('notifications/create-rule/', notification_views.create_alert_rule, name='create-rule'),
     path('notifications/get-rules/', notification_views.get_alert_rules, name='get-rules'),

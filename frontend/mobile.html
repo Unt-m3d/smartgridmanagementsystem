@@ -230,14 +230,14 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>⚡ Smart Grid</h1>
+            <h1>Smart Grid</h1>
             <p>Mobile Monitoring</p>
             <div class="status-badge" id="statusBadge">🔌 Checking...</div>
         </div>
         
         <!-- Real-Time Status -->
         <div class="card">
-            <h2>📊 Real-Time Status</h2>
+            <h2>Real-Time Status</h2>
             <div class="metric">
                 <span class="metric-label">Voltage:</span>
                 <span class="metric-value" id="voltage">-- V</span>
@@ -254,26 +254,26 @@
                 <span class="metric-label">Device:</span>
                 <span class="metric-value" id="deviceStatus">--</span>
             </div>
-            <button class="btn btn-primary" onclick="refreshData()">🔄 Refresh</button>
+            <button class="btn btn-primary" onclick="refreshData()">Refresh</button>
         </div>
         
         <!-- Device Control -->
         <div class="card">
             <h2>⚙️ Device Control</h2>
-            <button class="btn btn-success" onclick="turnOn()">✅ Turn ON</button>
-            <button class="btn btn-danger" onclick="turnOff()">❌ Turn OFF</button>
+            <button class="btn btn-success" onclick="turnOn()">Turn ON</button>
+            <button class="btn btn-danger" onclick="turnOff()">Turn OFF</button>
         </div>
         
         <!-- Alerts -->
         <div class="card">
-            <h2>🔔 Recent Alerts <span id="alertCount" class="notification-count" style="display:none;"></span></h2>
+            <h2>Recent Alerts <span id="alertCount" class="notification-count" style="display:none;"></span></h2>
             <div id="alertsList"></div>
-            <button class="btn btn-primary" onclick="loadAlerts()">📋 Load Alerts</button>
+            <button class="btn btn-primary" onclick="loadAlerts()">Load Alerts</button>
         </div>
         
         <!-- Alert Configuration -->
         <div class="card">
-            <h2>📧 Alert Settings</h2>
+            <h2>Alert Settings</h2>
             <div id="settingsMessage"></div>
             
             <div class="input-group">
@@ -287,14 +287,14 @@
                 <div class="info-text">Requires Twilio setup (optional)</div>
             </div>
             
-            <button class="btn btn-primary" onclick="saveAlertSettings()" id="saveBtn">💾 Save Settings</button>
-            <button class="btn btn-primary" onclick="testEmail()" id="testEmailBtn">✉️ Test Email</button>
-            <button class="btn btn-primary" onclick="testSMS()" id="testSMSBtn">📱 Test SMS</button>
+            <button class="btn btn-primary" onclick="saveAlertSettings()" id="saveBtn">Save Settings</button>
+            <button class="btn btn-primary" onclick="testEmail()" id="testEmailBtn">Test Email</button>
+            <button class="btn btn-primary" onclick="testSMS()" id="testSMSBtn">Test SMS</button>
         </div>
         
         <!-- Summary -->
         <div class="card">
-            <h2>📈 Summary (7 Days)</h2>
+            <h2>Summary (7 Days)</h2>
             <div class="metric">
                 <span class="metric-label">Avg Power:</span>
                 <span class="metric-value" id="avgPower">-- W</span>
@@ -303,7 +303,7 @@
                 <span class="metric-label">Peak Power:</span>
                 <span class="metric-value" id="peakPower">-- W</span>
             </div>
-            <button class="btn btn-primary" onclick="loadSummary()">📊 Load Summary</button>
+            <button class="btn btn-primary" onclick="loadSummary()">Load Summary</button>
         </div>
     </div>
     
@@ -337,10 +337,10 @@
         function updateStatusBadge() {
             const badge = document.getElementById('statusBadge');
             if (isOnline) {
-                badge.textContent = '🟢 Online';
+                badge.textContent = 'Online';
                 badge.className = 'status-badge status-online';
             } else {
-                badge.textContent = '🔴 Offline';
+                badge.textContent = 'Offline';
                 badge.className = 'status-badge status-offline';
             }
         }
@@ -372,20 +372,20 @@
             fetch(`${API_BASE}/device/on/`, { method: 'POST' })
                 .then(r => r.json())
                 .then(data => {
-                    alert('✅ Device turned ON');
+                    alert(' Device turned ON');
                     refreshData();
                 })
-                .catch(e => alert('❌ Error: ' + e));
+                .catch(e => alert('Error: ' + e));
         }
         
         function turnOff() {
             fetch(`${API_BASE}/device/off/`, { method: 'POST' })
                 .then(r => r.json())
                 .then(data => {
-                    alert('✅ Device turned OFF');
+                    alert('Device turned OFF');
                     refreshData();
                 })
-                .catch(e => alert('❌ Error: ' + e));
+                .catch(e => alert('Error: ' + e));
         }
         
         // Alerts
@@ -416,18 +416,18 @@
             const btn = document.getElementById('saveBtn');
             
             if (!email) {
-                showMessage('❌ Please enter your email address', 'error');
+                showMessage('Please enter your email address', 'error');
                 return;
             }
             
             // Basic email validation
             if (!email.includes('@')) {
-                showMessage('❌ Please enter a valid email address', 'error');
+                showMessage('Please enter a valid email address', 'error');
                 return;
             }
             
             btn.disabled = true;
-            btn.textContent = '⏳ Saving...';
+            btn.textContent = 'Saving...';
             
             fetch(`${API_BASE}/notifications/register-contact/`, {
                 method: 'POST',
@@ -442,20 +442,20 @@
             .then(r => r.json())
             .then(data => {
                 btn.disabled = false;
-                btn.textContent = '💾 Save Settings';
+                btn.textContent = 'Save Settings';
                 
                 if (data.success) {
-                    showMessage('✅ Settings saved successfully! You will receive alerts at ' + email, 'success');
+                    showMessage('Settings saved successfully! You will receive alerts at ' + email, 'success');
                     localStorage.setItem('userEmail', email);
                     localStorage.setItem('userPhone', phone);
                 } else {
-                    showMessage('❌ Error: ' + (data.error || 'Unknown error'), 'error');
+                    showMessage('Error: ' + (data.error || 'Unknown error'), 'error');
                 }
             })
             .catch(e => {
                 btn.disabled = false;
-                btn.textContent = '💾 Save Settings';
-                showMessage('❌ Connection error: ' + e, 'error');
+                btn.textContent = 'Save Settings';
+                showMessage('Connection error: ' + e, 'error');
             });
         }
         
@@ -465,17 +465,17 @@
             const btn = document.getElementById('testEmailBtn');
             
             if (!email) {
-                showMessage('❌ Please enter your email first', 'error');
+                showMessage('Please enter your email first', 'error');
                 return;
             }
             
             if (!email.includes('@')) {
-                showMessage('❌ Please enter a valid email address', 'error');
+                showMessage('Please enter a valid email address', 'error');
                 return;
             }
             
             btn.disabled = true;
-            btn.textContent = '⏳ Sending...';
+            btn.textContent = 'Sending...';
             
             fetch(`${API_BASE}/notifications/test-email/`, {
                 method: 'POST',
@@ -485,18 +485,18 @@
             .then(r => r.json())
             .then(data => {
                 btn.disabled = false;
-                btn.textContent = '✉️ Test Email';
+                btn.textContent = 'Test Email';
                 
                 if (data.success) {
-                    showMessage('✅ ' + data.message + ' Check your inbox!', 'success');
+                    showMessage('yes' + data.message + ' Check your inbox!', 'success');
                 } else {
-                    showMessage('❌ ' + (data.message || 'Failed to send email'), 'error');
+                    showMessage('no' + (data.message || 'Failed to send email'), 'error');
                 }
             })
             .catch(e => {
                 btn.disabled = false;
-                btn.textContent = '✉️ Test Email';
-                showMessage('❌ Error: ' + e, 'error');
+                btn.textContent = 'Test Email';
+                showMessage('Error: ' + e, 'error');
             });
         }
         
@@ -506,12 +506,12 @@
             const btn = document.getElementById('testSMSBtn');
             
             if (!phone) {
-                showMessage('❌ Please enter your phone number first', 'error');
+                showMessage('Please enter your phone number first', 'error');
                 return;
             }
             
             btn.disabled = true;
-            btn.textContent = '⏳ Sending...';
+            btn.textContent = 'Sending...';
             
             fetch(`${API_BASE}/notifications/test-sms/`, {
                 method: 'POST',
@@ -521,18 +521,18 @@
             .then(r => r.json())
             .then(data => {
                 btn.disabled = false;
-                btn.textContent = '📱 Test SMS';
+                btn.textContent = 'Test SMS';
                 
                 if (data.success) {
-                    showMessage('✅ ' + data.message + ' Check your phone!', 'success');
+                    showMessage('yes' + data.message + ' Check your phone!', 'success');
                 } else {
-                    showMessage('❌ ' + (data.message || 'Failed to send SMS'), 'error');
+                    showMessage('no ' + (data.message || 'Failed to send SMS'), 'error');
                 }
             })
             .catch(e => {
                 btn.disabled = false;
-                btn.textContent = '📱 Test SMS';
-                showMessage('❌ Error: ' + e, 'error');
+                btn.textContent = 'Test SMS';
+                showMessage('Error: ' + e, 'error');
             });
         }
         
