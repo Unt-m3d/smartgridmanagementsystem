@@ -25,7 +25,7 @@ urlpatterns = [
     path('predictions/', energy_views.get_predictions, name='predictions'),
     path('predictions/trigger/', energy_views.trigger_prediction, name='trigger-prediction'),
     
-    # Alerts
+    # Alert
     path('alerts/', energy_views.get_alerts, name='get-alerts'),
     path('alerts/<int:alert_id>/resolve/', energy_views.resolve_alert, name='resolve-alert'),
     
