@@ -47,13 +47,13 @@ The **Smart Grid Management System** is an enterprise-grade web application desi
 
 ### What It Does
 
-✅ **Real-Time Monitoring** - Live electrical parameters (voltage, current, power)  
-✅ **Remote Device Control** - Intelligent ON/OFF operations with state persistence  
-✅ **AI-Powered Predictions** - Machine learning forecasts of energy consumption  
-✅ **Multi-Channel Alerts** - Email, SMS, and in-app notifications  
-✅ **Renewable Energy Tracking** - Monitor solar, wind, and alternative sources  
-✅ **Advanced Analytics** - Trends, patterns, and cost analysis  
-✅ **Scalable Architecture** - Handles thousands of concurrent users  
+ **Real-Time Monitoring** - Live electrical parameters (voltage, current, power)  
+ **Remote Device Control** - Intelligent ON/OFF operations with state persistence  
+ **AI-Powered Predictions** - Machine learning forecasts of energy consumption  
+ **Multi-Channel Alerts** - Email, SMS, and in-app notifications  
+ **Renewable Energy Tracking** - Monitor solar, wind, and alternative sources  
+ **Advanced Analytics** - Trends, patterns, and cost analysis  
+ **Scalable Architecture** - Handles thousands of concurrent users  
 
 ### Use Cases
 
@@ -836,16 +836,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 This project demonstrates:
 
-✅ **Distributed System Architecture** - Multiple services working together  
-✅ **Real-Time Data Processing** - WebSockets & Celery queues  
-✅ **RESTful API Design** - Proper HTTP methods & status codes  
-✅ **Database Optimization** - Indexing, caching, query optimization  
-✅ **Background Task Processing** - Async jobs & scheduling  
-✅ **Multi-Channel Notifications** - Email, SMS, in-app alerts  
-✅ **Machine Learning Integration** - AI predictions & forecasting  
-✅ **Scalable Architecture** - Handles thousands of concurrent users  
-✅ **Security Best Practices** - Authentication, authorization, encryption  
-✅ **DevOps & Deployment** - Docker, CI/CD, monitoring  
+ **Distributed System Architecture** - Multiple services working together  
+ **Real-Time Data Processing** - WebSockets & Celery queues  
+ **RESTful API Design** - Proper HTTP methods & status codes  
+ **Database Optimization** - Indexing, caching, query optimization  
+ **Background Task Processing** - Async jobs & scheduling  
+ **Multi-Channel Notifications** - Email, SMS, in-app alerts  
+ **Machine Learning Integration** - AI predictions & forecasting  
+ **Scalable Architecture** - Handles thousands of concurrent users  
+ **Security Best Practices** - Authentication, authorization, encryption  
+ **DevOps & Deployment** - Docker, CI/CD, monitoring  
 
 ---
 
@@ -879,10 +879,10 @@ This project demonstrates:
 
 <div align="center">
 
-### ⭐ If you found this project helpful, please give it a star!
+
 
 **Made with ❤️ by Group 2**
 
-[🔝 Back to Top](#-smart-grid-management-system)
+(#-smart-grid-management-system)
 
 </div>
