@@ -881,7 +881,7 @@ This project demonstrates:
 
 
 
-**Made with ❤️ by Group 2**
+**Made  by Group 2**
 
 (#-smart-grid-management-system)
 
