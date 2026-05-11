@@ -9,7 +9,7 @@ os.makedirs('notifications/migrations', exist_ok=True)
 # Create renewable app
 os.makedirs('renewable/migrations', exist_ok=True)
 
-# Analytics files
+# Analytics filess
 with open('analytics/__init__.py', 'w') as f:
     f.write('')
 
