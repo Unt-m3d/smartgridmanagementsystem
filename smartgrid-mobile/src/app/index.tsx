@@ -14,254 +14,424 @@ import {
 const API_BASE = 'http://192.168.1.3:8000/api';
 const COST_PER_KWH = 25;
 
+// ============== TYPE DEFINITIONS ==============
+interface GridData {
+  power?: number;
+  voltage?: number;
+  current?: number;
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  message?: string;
+}
+
+interface AlertRule {
+  id?: number;
+  name: string;
+  alert_type: string;
+  threshold: number;
+}
+
+interface RenewableSource {
+  id?: number;
+  name: string;
+  source_type: 'SOLAR' | 'WIND' | 'HYDRO' | 'OTHER';
+  capacity_kw: number;
+  location?: string;
+}
+
+type TabType = 'dashboard' | 'alerts' | 'renewable';
+type RuleType = 'voltage_high' | 'voltage_low' | 'power_high';
+type RenewableType = 'SOLAR' | 'WIND' | 'HYDRO' | 'OTHER';
+
+// ============== HELPER FUNCTIONS ==============
+/**
+ * Fetch helper with error handling and status checking
+ */
+async function fetchWithErrorHandling<T>(
+  url: string,
+  options?: RequestInit
+): Promise<T> {
+  try {
+    const response = await fetch(url, options);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data as T;
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    console.error(`Fetch error at ${url}:`, errorMessage);
+    throw error;
+  }
+}
+
+// ============== MAIN COMPONENT ==============
 export default function SmartGridApp() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  // ========== TAB STATE ==========
+  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Dashboard State
-  const [power, setPower] = useState(0);
-  const [voltage, setVoltage] = useState(0);
-  const [current, setCurrent] = useState(0);
-  const [deviceStatus, setDeviceStatus] = useState('ON');
-  const [dailyCost, setDailyCost] = useState(0);
-  const [monthlyCost, setMonthlyCost] = useState(0);
-  const [dailyKwh, setDailyKwh] = useState(0);
+  // ========== DASHBOARD STATE ==========
+  const [power, setPower] = useState<number>(0);
+  const [voltage, setVoltage] = useState<number>(0);
+  const [current, setCurrent] = useState<number>(0);
+  const [deviceStatus, setDeviceStatus] = useState<'ON' | 'OFF'>('ON');
+  const [dailyCost, setDailyCost] = useState<number>(0);
+  const [monthlyCost, setMonthlyCost] = useState<number>(0);
+  const [dailyKwh, setDailyKwh] = useState<number>(0);
 
-  // Alert State
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [emailAlerts, setEmailAlerts] = useState(true);
-  const [smsAlerts, setSmsAlerts] = useState(false);
-  const [alertRules, setAlertRules] = useState([]);
-  const [ruleName, setRuleName] = useState('');
-  const [ruleType, setRuleType] = useState('voltage_high');
-  const [ruleThreshold, setRuleThreshold] = useState('');
+  // ========== ALERT STATE ==========
+  const [email, setEmail] = useState<string>('');
+  const [phone, setPhone] = useState<string>('');
+  const [emailAlerts, setEmailAlerts] = useState<boolean>(true);
+  const [smsAlerts, setSmsAlerts] = useState<boolean>(false);
+  const [alertRules, setAlertRules] = useState<AlertRule[]>([]);
+  const [ruleName, setRuleName] = useState<string>('');
+  const [ruleType, setRuleType] = useState<RuleType>('voltage_high');
+  const [ruleThreshold, setRuleThreshold] = useState<string>('');
 
-  // Renewable State
-  const [renewableSources, setRenewableSources] = useState([]);
-  const [renewableName, setRenewableName] = useState('');
-  const [renewableType, setRenewableType] = useState('SOLAR');
-  const [renewableCapacity, setRenewableCapacity] = useState('');
-  const [renewableLocation, setRenewableLocation] = useState('');
+  // ========== RENEWABLE STATE ==========
+  const [renewableSources, setRenewableSources] = useState<RenewableSource[]>([]);
+  const [renewableName, setRenewableName] = useState<string>('');
+  const [renewableType, setRenewableType] = useState<RenewableType>('SOLAR');
+  const [renewableCapacity, setRenewableCapacity] = useState<string>('');
+  const [renewableLocation, setRenewableLocation] = useState<string>('');
 
-  // Fetch latest data
-  const fetchLatestData = async () => {
+  // ========== DATA FETCHING FUNCTIONS ==========
+
+  /**
+   * Fetch latest grid data from API
+   */
+  const fetchLatestData = async (): Promise<void> => {
     try {
-      const response = await fetch(`${API_BASE}/data/latest/`);
-      const jsonData = await response.json();
-      if (jsonData.data) {
-        setPower(jsonData.data.power || 0);
-        setVoltage(jsonData.data.voltage || 0);
-        setCurrent(jsonData.data.current || 0);
+      const response = await fetchWithErrorHandling<ApiResponse<GridData>>(
+        `${API_BASE}/data/latest/`
+      );
+      
+      if (response.data) {
+        setPower(response.data.power || 0);
+        setVoltage(response.data.voltage || 0);
+        setCurrent(response.data.current || 0);
       }
     } catch (error) {
-      console.log('Error fetching data:', error);
+      console.error('Failed to fetch latest data:', error);
+      Alert.alert('Error', 'Failed to fetch grid data. Please check your connection.');
     }
   };
 
-  // Calculate costs
-  const calculateCosts = () => {
+  /**
+   * Calculate daily and monthly costs based on power consumption
+   */
+  const calculateCosts = (): void => {
     const avgPowerW = power || 2500;
     const dailyEnergy = (avgPowerW / 1000) * 24;
     const daily = dailyEnergy * COST_PER_KWH;
     const monthly = daily * 30;
+    
     setDailyKwh(dailyEnergy);
     setDailyCost(daily);
     setMonthlyCost(monthly);
   };
 
-  // Refresh all data
-  const onRefresh = async () => {
+  /**
+   * Refresh all data from APIs
+   */
+  const onRefresh = async (): Promise<void> => {
     setRefreshing(true);
-    await fetchLatestData();
-    calculateCosts();
-    await getAlertRules();
-    await getRenewableSources();
-    setRefreshing(false);
-  };
-
-  // Device Control
-  const turnDeviceOn = async () => {
     try {
-      const response = await fetch(`${API_BASE}/device/on/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      const jsonData = await response.json();
-      if (jsonData.success) {
-        setDeviceStatus('ON');
-        Alert.alert('Success', 'Device turned ON');
-      }
+      await fetchLatestData();
+      calculateCosts();
+      await getAlertRules();
+      await getRenewableSources();
     } catch (error) {
-      Alert.alert('Error', 'Failed to turn device on');
+      console.error('Refresh failed:', error);
+    } finally {
+      setRefreshing(false);
     }
   };
 
-  const turnDeviceOff = async () => {
-    try {
-      const response = await fetch(`${API_BASE}/device/off/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      const jsonData = await response.json();
-      if (jsonData.success) {
-        setDeviceStatus('OFF');
-        Alert.alert('Success', 'Device turned OFF');
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to turn device off');
-    }
-  };
+  // ========== DEVICE CONTROL FUNCTIONS ==========
 
-  // Alerts Functions
-  const registerContact = async () => {
-    if (!email) {
-      Alert.alert('Error', 'Please enter email');
-      return;
-    }
+  /**
+   * Turn device ON
+   */
+  const turnDeviceOn = async (): Promise<void> => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/notifications/register-contact/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_email: email,
-          user_phone: phone,
-          receive_email_alerts: emailAlerts,
-          receive_sms_alerts: smsAlerts,
-        }),
-      });
-      const jsonData = await response.json();
-      if (jsonData.success) {
-        Alert.alert('Success', 'Contact registered');
-        setEmail('');
-        setPhone('');
+      const response = await fetchWithErrorHandling<ApiResponse<unknown>>(
+        `${API_BASE}/device/on/`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+      
+      if (response.success) {
+        setDeviceStatus('ON');
+        Alert.alert('Success', 'Device turned ON');
+      } else {
+        Alert.alert('Error', response.message || 'Failed to turn device on');
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to register contact');
+      Alert.alert('Error', 'Failed to turn device on. Please try again.');
+      console.error('Turn ON error:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const createAlertRule = async () => {
-    if (!ruleName || !ruleThreshold) {
-      Alert.alert('Error', 'Please fill all fields');
-      return;
-    }
+  /**
+   * Turn device OFF
+   */
+  const turnDeviceOff = async (): Promise<void> => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/notifications/create-rule/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: ruleName,
-          alert_type: ruleType,
-          threshold: parseFloat(ruleThreshold),
-        }),
-      });
-      const jsonData = await response.json();
-      if (jsonData.success) {
-        Alert.alert('Success', 'Alert rule created');
+      const response = await fetchWithErrorHandling<ApiResponse<unknown>>(
+        `${API_BASE}/device/off/`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+      
+      if (response.success) {
+        setDeviceStatus('OFF');
+        Alert.alert('Success', 'Device turned OFF');
+      } else {
+        Alert.alert('Error', response.message || 'Failed to turn device off');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to turn device off. Please try again.');
+      console.error('Turn OFF error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ========== ALERT MANAGEMENT FUNCTIONS ==========
+
+  /**
+   * Register contact for notifications
+   */
+  const registerContact = async (): Promise<void> => {
+    if (!email) {
+      Alert.alert('Error', 'Please enter email address');
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      const response = await fetchWithErrorHandling<ApiResponse<unknown>>(
+        `${API_BASE}/notifications/register-contact/`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_email: email,
+            user_phone: phone || null,
+            receive_email_alerts: emailAlerts,
+            receive_sms_alerts: smsAlerts,
+          }),
+        }
+      );
+      
+      if (response.success) {
+        Alert.alert('Success', 'Contact registered successfully');
+        setEmail('');
+        setPhone('');
+      } else {
+        Alert.alert('Error', response.message || 'Failed to register contact');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to register contact. Please try again.');
+      console.error('Register contact error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Create a new alert rule
+   */
+  const createAlertRule = async (): Promise<void> => {
+    if (!ruleName || !ruleThreshold) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    const thresholdNum = parseFloat(ruleThreshold);
+    if (isNaN(thresholdNum)) {
+      Alert.alert('Error', 'Threshold must be a valid number');
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      const response = await fetchWithErrorHandling<ApiResponse<AlertRule>>(
+        `${API_BASE}/notifications/create-rule/`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: ruleName,
+            alert_type: ruleType,
+            threshold: thresholdNum,
+          }),
+        }
+      );
+      
+      if (response.success) {
+        Alert.alert('Success', 'Alert rule created successfully');
         setRuleName('');
         setRuleThreshold('');
         await getAlertRules();
+      } else {
+        Alert.alert('Error', response.message || 'Failed to create alert rule');
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to create alert rule');
+      Alert.alert('Error', 'Failed to create alert rule. Please try again.');
+      console.error('Create rule error:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const getAlertRules = async () => {
+  /**
+   * Fetch all alert rules
+   */
+  const getAlertRules = async (): Promise<void> => {
     try {
-      const response = await fetch(`${API_BASE}/notifications/get-rules/`);
-      const jsonData = await response.json();
-      if (jsonData.success && jsonData.data) {
-        setAlertRules(jsonData.data);
+      const response = await fetchWithErrorHandling<ApiResponse<AlertRule[]>>(
+        `${API_BASE}/notifications/get-rules/`
+      );
+      
+      if (response.success && Array.isArray(response.data)) {
+        setAlertRules(response.data);
       }
     } catch (error) {
-      console.log('Error fetching alert rules:', error);
+      console.error('Failed to fetch alert rules:', error);
     }
   };
 
-  const testEmail = async () => {
+  /**
+   * Send test email
+   */
+  const testEmail = async (): Promise<void> => {
     if (!email) {
       Alert.alert('Error', 'Please enter your email first');
       return;
     }
+    
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/notifications/test-email/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email }),
-      });
-      const jsonData = await response.json();
-      if (jsonData.success) {
-        Alert.alert('Success', 'Test email sent');
+      const response = await fetchWithErrorHandling<ApiResponse<unknown>>(
+        `${API_BASE}/notifications/test-email/`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        }
+      );
+      
+      if (response.success) {
+        Alert.alert('Success', 'Test email sent successfully');
+      } else {
+        Alert.alert('Error', response.message || 'Failed to send test email');
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to send test email');
+      Alert.alert('Error', 'Failed to send test email. Please try again.');
+      console.error('Test email error:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Renewable Functions
-  const addRenewableSource = async () => {
+  // ========== RENEWABLE SOURCE FUNCTIONS ==========
+
+  /**
+   * Add a new renewable energy source
+   */
+  const addRenewableSource = async (): Promise<void> => {
     if (!renewableName || !renewableCapacity) {
-      Alert.alert('Error', 'Please fill all fields');
+      Alert.alert('Error', 'Please fill in all required fields');
       return;
     }
+
+    const capacityNum = parseFloat(renewableCapacity);
+    if (isNaN(capacityNum) || capacityNum <= 0) {
+      Alert.alert('Error', 'Capacity must be a positive number');
+      return;
+    }
+    
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/renewable/add-source/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: renewableName,
-          source_type: renewableType,
-          capacity_kw: parseFloat(renewableCapacity),
-          location: renewableLocation,
-        }),
-      });
-      const jsonData = await response.json();
-      if (jsonData.success) {
-        Alert.alert('Success', 'Renewable source added');
+      const response = await fetchWithErrorHandling<ApiResponse<RenewableSource>>(
+        `${API_BASE}/renewable/add-source/`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: renewableName,
+            source_type: renewableType,
+            capacity_kw: capacityNum,
+            location: renewableLocation || null,
+          }),
+        }
+      );
+      
+      if (response.success) {
+        Alert.alert('Success', 'Renewable source added successfully');
         setRenewableName('');
         setRenewableCapacity('');
         setRenewableLocation('');
         await getRenewableSources();
+      } else {
+        Alert.alert('Error', response.message || 'Failed to add renewable source');
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to add renewable source');
+      Alert.alert('Error', 'Failed to add renewable source. Please try again.');
+      console.error('Add renewable source error:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const getRenewableSources = async () => {
+  /**
+   * Fetch all renewable sources
+   */
+  const getRenewableSources = async (): Promise<void> => {
     try {
-      const response = await fetch(`${API_BASE}/renewable/sources/`);
-      const jsonData = await response.json();
-      if (jsonData.success && jsonData.data) {
-        setRenewableSources(jsonData.data);
+      const response = await fetchWithErrorHandling<ApiResponse<RenewableSource[]>>(
+        `${API_BASE}/renewable/sources/`
+      );
+      
+      if (response.success && Array.isArray(response.data)) {
+        setRenewableSources(response.data);
       }
     } catch (error) {
-      console.log('Error fetching renewable sources:', error);
+      console.error('Failed to fetch renewable sources:', error);
     }
   };
 
-  // Load initial data
+  // ========== LIFECYCLE EFFECTS ==========
+
+  /**
+   * Initialize data on component mount
+   */
   useEffect(() => {
+    // Fetch initial data
     fetchLatestData();
     calculateCosts();
     getAlertRules();
     getRenewableSources();
 
+    // Set up auto-refresh interval (every 30 seconds)
     const interval = setInterval(() => {
       fetchLatestData();
       calculateCosts();
@@ -270,16 +440,31 @@ export default function SmartGridApp() {
     return () => clearInterval(interval);
   }, []);
 
-  const renderRuleItem = (rule: any) => (
-    <View key={Math.random()} style={styles.ruleItem}>
+  /**
+   * Recalculate costs when power changes
+   */
+  useEffect(() => {
+    calculateCosts();
+  }, [power]);
+
+  // ========== RENDER FUNCTIONS ==========
+
+  const renderRuleItem = (rule: AlertRule): JSX.Element => (
+    <View key={rule.id || Math.random()} style={styles.ruleItem}>
       <Text style={styles.ruleName}>{rule.name}</Text>
-      <Text style={styles.ruleType}>{rule.alert_type}</Text>
+      <Text style={styles.ruleType}>
+        {rule.alert_type === 'voltage_high'
+          ? 'High Voltage'
+          : rule.alert_type === 'voltage_low'
+          ? 'Low Voltage'
+          : 'High Power'}
+      </Text>
       <Text style={styles.ruleThreshold}>Threshold: {rule.threshold}</Text>
     </View>
   );
 
-  const renderSourceItem = (source: any) => (
-    <View key={Math.random()} style={styles.sourceItem}>
+  const renderSourceItem = (source: RenewableSource): JSX.Element => (
+    <View key={source.id || Math.random()} style={styles.sourceItem}>
       <Text style={styles.sourceName}>{source.name}</Text>
       <Text style={styles.sourceType}>{source.source_type}</Text>
       <Text style={styles.sourceCapacity}>Capacity: {source.capacity_kw} kW</Text>
@@ -288,6 +473,8 @@ export default function SmartGridApp() {
       )}
     </View>
   );
+
+  // ========== MAIN RENDER ==========
 
   return (
     <ScrollView
@@ -364,16 +551,28 @@ export default function SmartGridApp() {
             </View>
 
             <View style={styles.buttonGroup}>
-              <TouchableOpacity style={[styles.button, styles.buttonOn]} onPress={turnDeviceOn}>
-                <Text style={styles.buttonText}>Turn ON</Text>
+              <TouchableOpacity
+                style={[styles.button, styles.buttonOn]}
+                onPress={turnDeviceOn}
+                disabled={loading}
+              >
+                {loading ? <ActivityIndicator color="white" /> : <Text style={styles.buttonText}>Turn ON</Text>}
               </TouchableOpacity>
 
-              <TouchableOpacity style={[styles.button, styles.buttonOff]} onPress={turnDeviceOff}>
-                <Text style={styles.buttonText}>Turn OFF</Text>
+              <TouchableOpacity
+                style={[styles.button, styles.buttonOff]}
+                onPress={turnDeviceOff}
+                disabled={loading}
+              >
+                {loading ? <ActivityIndicator color="white" /> : <Text style={styles.buttonText}>Turn OFF</Text>}
               </TouchableOpacity>
 
-              <TouchableOpacity style={[styles.button, styles.buttonRefresh]} onPress={onRefresh}>
-                <Text style={styles.buttonText}>Refresh</Text>
+              <TouchableOpacity
+                style={[styles.button, styles.buttonRefresh]}
+                onPress={onRefresh}
+                disabled={refreshing}
+              >
+                {refreshing ? <ActivityIndicator color="white" /> : <Text style={styles.buttonText}>Refresh</Text>}
               </TouchableOpacity>
             </View>
           </View>
@@ -436,15 +635,17 @@ export default function SmartGridApp() {
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
+              editable={!loading}
             />
 
             <TextInput
               style={styles.input}
-              placeholder="Phone Number"
+              placeholder="Phone Number (Optional)"
               placeholderTextColor="#999"
               value={phone}
               onChangeText={setPhone}
               keyboardType="phone-pad"
+              editable={!loading}
             />
 
             <View style={styles.checkboxContainer}>
@@ -484,7 +685,11 @@ export default function SmartGridApp() {
               onPress={testEmail}
               disabled={loading}
             >
-              <Text style={styles.buttonText}>Test Email</Text>
+              {loading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text style={styles.buttonText}>Test Email</Text>
+              )}
             </TouchableOpacity>
           </View>
 
@@ -497,6 +702,7 @@ export default function SmartGridApp() {
               placeholderTextColor="#999"
               value={ruleName}
               onChangeText={setRuleName}
+              editable={!loading}
             />
 
             <View style={styles.selectContainer}>
@@ -536,6 +742,7 @@ export default function SmartGridApp() {
               value={ruleThreshold}
               onChangeText={setRuleThreshold}
               keyboardType="decimal-pad"
+              editable={!loading}
             />
 
             <TouchableOpacity
@@ -555,7 +762,7 @@ export default function SmartGridApp() {
             <Text style={styles.cardTitle}>Active Alert Rules</Text>
 
             {alertRules.length > 0 ? (
-              alertRules.map((rule: any) => renderRuleItem(rule))
+              alertRules.map((rule) => renderRuleItem(rule))
             ) : (
               <Text style={styles.noDataText}>No alert rules created yet</Text>
             )}
@@ -575,6 +782,7 @@ export default function SmartGridApp() {
               placeholderTextColor="#999"
               value={renewableName}
               onChangeText={setRenewableName}
+              editable={!loading}
             />
 
             <View style={styles.selectContainer}>
@@ -600,14 +808,16 @@ export default function SmartGridApp() {
               value={renewableCapacity}
               onChangeText={setRenewableCapacity}
               keyboardType="decimal-pad"
+              editable={!loading}
             />
 
             <TextInput
               style={styles.input}
-              placeholder="Location"
+              placeholder="Location (Optional)"
               placeholderTextColor="#999"
               value={renewableLocation}
               onChangeText={setRenewableLocation}
+              editable={!loading}
             />
 
             <TouchableOpacity
@@ -627,7 +837,7 @@ export default function SmartGridApp() {
             <Text style={styles.cardTitle}>Renewable Sources</Text>
 
             {renewableSources.length > 0 ? (
-              renewableSources.map((source: any) => renderSourceItem(source))
+              renewableSources.map((source) => renderSourceItem(source))
             ) : (
               <Text style={styles.noDataText}>No renewable sources added yet</Text>
             )}
@@ -644,6 +854,7 @@ export default function SmartGridApp() {
   );
 }
 
+// ============== STYLES ==============
 const styles = StyleSheet.create({
   container: {
     flex: 1,
