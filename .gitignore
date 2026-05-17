@@ -57,3 +57,9 @@ celerybeat-schedule
 # Typo directories to ignore
 notificatios/
 simulatorr/
+
+
+db.sqlite3
+db.sqlite3-journal
+*.sqlite3
+*.sqlite3-journal
