@@ -441,7 +441,7 @@ export default function SmartGridApp() {
   }, []);
 
   /**
-   * Recalculate costs when power changes
+   * Recalculate costs when power changesipconfig
    */
   useEffect(() => {
     calculateCosts();
@@ -449,31 +449,30 @@ export default function SmartGridApp() {
 
   // ========== RENDER FUNCTIONS ==========
 
-  const renderRuleItem = (rule: AlertRule): JSX.Element => (
-    <View key={rule.id || Math.random()} style={styles.ruleItem}>
-      <Text style={styles.ruleName}>{rule.name}</Text>
-      <Text style={styles.ruleType}>
-        {rule.alert_type === 'voltage_high'
-          ? 'High Voltage'
-          : rule.alert_type === 'voltage_low'
-          ? 'Low Voltage'
-          : 'High Power'}
-      </Text>
-      <Text style={styles.ruleThreshold}>Threshold: {rule.threshold}</Text>
-    </View>
-  );
+const renderRuleItem = (rule: AlertRule) => (
+  <View key={rule.id || Math.random()} style={styles.ruleItem}>
+    <Text style={styles.ruleName}>{rule.name}</Text>
+    <Text style={styles.ruleType}>
+      {rule.alert_type === 'voltage_high'
+        ? 'High Voltage'
+        : rule.alert_type === 'voltage_low'
+        ? 'Low Voltage'
+        : 'High Power'}
+    </Text>
+    <Text style={styles.ruleThreshold}>Threshold: {rule.threshold}</Text>
+  </View>
+);
 
-  const renderSourceItem = (source: RenewableSource): JSX.Element => (
-    <View key={source.id || Math.random()} style={styles.sourceItem}>
-      <Text style={styles.sourceName}>{source.name}</Text>
-      <Text style={styles.sourceType}>{source.source_type}</Text>
-      <Text style={styles.sourceCapacity}>Capacity: {source.capacity_kw} kW</Text>
-      {source.location && (
-        <Text style={styles.sourceLocation}>Location: {source.location}</Text>
-      )}
-    </View>
-  );
-
+const renderSourceItem = (source: RenewableSource) => (
+  <View key={source.id || Math.random()} style={styles.sourceItem}>
+    <Text style={styles.sourceName}>{source.name}</Text>
+    <Text style={styles.sourceType}>{source.source_type}</Text>
+    <Text style={styles.sourceCapacity}>Capacity: {source.capacity_kw} kW</Text>
+    {source.location && (
+      <Text style={styles.sourceLocation}>Location: {source.location}</Text>
+    )}
+  </View>
+);
   // ========== MAIN RENDER ==========
 
   return (
